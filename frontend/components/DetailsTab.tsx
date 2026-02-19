@@ -170,34 +170,29 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
         </div>
       </div>
 
-      <div className="col-span-3 row-span-4 col-start-3 row-start-1 bg-[var(--card)] border border-[var(--border)] overflow-y-auto">
-        {selectedItem ? (
-          selectedItem.type === 'node' ? (
-            <NodeDetails account={selectedItem.data} onClear={() => setSelectedItem(null)} />
-          ) : (
-            <RingDetails ring={selectedItem.data} accounts={result.all_accounts} onClear={() => setSelectedItem(null)} />
-          )
-        ) : (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-xs font-mono text-[var(--muted-foreground)] text-center">
-              SELECT A NODE OR RING<br />
-              FROM THE LEFT PANEL
-            </p>
+      {selectedItem ? (
+        <>
+          <div className="col-span-3 row-span-4 col-start-3 row-start-1 bg-[var(--card)] border border-[var(--border)] overflow-y-auto">
+            {selectedItem.type === 'node' ? (
+              <NodeDetails account={selectedItem.data} onClear={() => setSelectedItem(null)} />
+            ) : (
+              <RingDetails ring={selectedItem.data} accounts={result.all_accounts} onClear={() => setSelectedItem(null)} />
+            )}
           </div>
-        )}
-      </div>
 
-      <div className="col-span-3 col-start-3 row-start-5 bg-[var(--card)] border border-[var(--border)] p-4 overflow-y-auto">
-        {selectedItem ? (
-          selectedItem.type === 'node' ? (
-            <NodeSummary account={selectedItem.data} />
-          ) : (
-            <RingSummary ring={selectedItem.data} accounts={result.all_accounts} />
-          )
-        ) : (
+          <div className="col-span-3 col-start-3 row-start-5 bg-[var(--card)] border border-[var(--border)] p-4 overflow-y-auto">
+            {selectedItem.type === 'node' ? (
+              <NodeSummary account={selectedItem.data} />
+            ) : (
+              <RingSummary ring={selectedItem.data} accounts={result.all_accounts} />
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="col-span-3 col-start-3 row-span-5 row-start-1 bg-[var(--card)] border border-[var(--border)] p-4 overflow-y-auto">
           <GeneralSummary summary={result.summary} safeCount={safeAccounts.length} />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

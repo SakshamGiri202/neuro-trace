@@ -229,12 +229,6 @@ export default function AnalysisPage() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <FraudRingTable
-          rings={analysisResult.fraud_rings}
-          selectedRing={selectedRing}
-          onSelectRing={setSelectedRing}
-        />
-        
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center gap-1 px-4 py-2 border-b border-[var(--border)] bg-[var(--card)]">
             <TabButton
@@ -251,22 +245,24 @@ export default function AnalysisPage() {
             </TabButton>
           </div>
           
-          <div className="flex-1 overflow-hidden">
-            {activeTab === 'graph' ? (
+          {activeTab === 'graph' ? (
+            <div className="h-[1400px]">
               <GraphView
                 result={analysisResult}
                 selectedRing={selectedRing}
                 onNodeClick={setSelectedNode}
                 isDark={isDark}
               />
-            ) : (
+            </div>
+          ) : (
+            <div className="flex-1 overflow-hidden">
               <DetailsTab
                 result={analysisResult}
                 selectedNode={selectedNode}
                 onNodeClick={setSelectedNode}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
       <SummaryBar

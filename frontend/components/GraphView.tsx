@@ -314,7 +314,7 @@ export default function GraphView({
   }, [selectedRing, result])
 
   return (
-    <div ref={containerRef} className="relative flex-1" style={{ minHeight: '400px' }}>
+    <div ref={containerRef} className="relative flex-1" style={{ minHeight: '1400px' }}>
       <svg
         ref={svgRef}
         className={`absolute inset-0 w-full h-full ${isDark ? 'bg-[var(--background)]' : 'bg-[#F4F4F8]'}`}
