@@ -21,7 +21,7 @@ export default function NodeDetailPanel({ account, onClose }: NodeDetailPanelPro
   return (
     <aside className="w-72 border-l border-[var(--border)] bg-[var(--card)] p-4 flex flex-col gap-4 animate-fade-in-up overflow-y-auto">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
+        <span className="text-sm font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
           Node Inspector
         </span>
         <button
@@ -33,7 +33,7 @@ export default function NodeDetailPanel({ account, onClose }: NodeDetailPanelPro
       </div>
 
       <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
+        <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-1">
           ACCOUNT ID
         </span>
         <span className="text-sm font-mono font-bold text-[var(--primary)] break-all">
@@ -46,12 +46,12 @@ export default function NodeDetailPanel({ account, onClose }: NodeDetailPanelPro
       </div>
 
       <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-2">
+        <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-2">
           DETECTED PATTERNS
         </span>
         <div className="flex flex-wrap gap-1.5">
           {account.detected_patterns.length === 0 ? (
-            <span className="text-[10px] font-mono text-[var(--muted-foreground)]">
+            <span className="text-sm font-mono text-[var(--muted-foreground)]">
               NONE
             </span>
           ) : (
@@ -61,7 +61,7 @@ export default function NodeDetailPanel({ account, onClose }: NodeDetailPanelPro
               return (
                 <span
                   key={`${p}-${i}`}
-                  className={`text-[10px] font-mono px-2 py-0.5 ${
+                  className={`text-sm font-mono px-2 py-0.5 ${
                     isHighRisk
                       ? 'bg-[var(--destructive)]/20 text-[var(--destructive)] border border-[#FF2D55]/40'
                       : 'bg-transparent text-[var(--primary)] border border-[var(--primary)]/40'
@@ -77,7 +77,7 @@ export default function NodeDetailPanel({ account, onClose }: NodeDetailPanelPro
 
       <div className="grid grid-cols-2 gap-2">
         <div className="border border-[var(--border)] p-3">
-          <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
+          <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-1">
             RING ID
           </span>
           <span className="text-xs font-mono text-[#FFB800] font-bold">
@@ -85,7 +85,7 @@ export default function NodeDetailPanel({ account, onClose }: NodeDetailPanelPro
           </span>
         </div>
         <div className="border border-[var(--border)] p-3">
-          <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
+          <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-1">
             TOTAL TXN
           </span>
           <span className="text-xs font-mono text-[var(--foreground)] font-bold">

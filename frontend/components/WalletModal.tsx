@@ -44,12 +44,12 @@ export default function WalletModal({
         </div>
         <div className="p-4 flex flex-col gap-3">
           <div className="p-2 border border-[#FFB800]/30 bg-[#FFB800]/5">
-            <p className="text-[10px] font-mono text-[#FFB800]">
+            <p className="text-sm font-mono text-[#FFB800]">
               TESTNET ONLY. Never enter your mainnet mnemonic. This is for
               forensic report anchoring on Algorand testnet.
             </p>
           </div>
-          <label className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-wider">
+          <label className="text-sm font-mono text-[var(--muted-foreground)] tracking-wider">
             25-WORD MNEMONIC
           </label>
           <textarea
@@ -63,7 +63,7 @@ export default function WalletModal({
             className="w-full bg-[var(--background)] border border-[var(--border)] px-3 py-2 text-xs font-mono text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/50 focus:border-[var(--primary)] focus:outline-none resize-none"
           />
           {error && (
-            <p className="text-[10px] font-mono text-[var(--destructive)]">{error}</p>
+            <p className="text-sm font-mono text-[var(--destructive)]">{error}</p>
           )}
           <button
             onClick={handleConnect}

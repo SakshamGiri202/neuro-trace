@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${ibmPlexMono.variable} font-sans antialiased`}>
+      <body suppressHydrationWarning className={`${ibmPlexMono.variable} font-sans antialiased bg-diagonal-lines`}>
         {children}
         <Analytics />
       </body>

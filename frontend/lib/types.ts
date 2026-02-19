@@ -67,10 +67,12 @@ export interface NavBarProps {
   onConnectWallet: () => void
   isDark: boolean
   onToggleTheme: () => void
+  showLegend?: boolean
 }
 
 export interface UploadZoneProps {
   onDataLoaded: (rows: TxRow[]) => void
+  onFileLoaded: (file: File) => void
   isAnalyzing: boolean
 }
 

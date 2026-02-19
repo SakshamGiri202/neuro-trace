@@ -4,16 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AnalysisResult, Toast } from '@/lib/types'
 import { sha256 } from '@/lib/utils'
-import { deserializeAnalysisResult } from '@/lib/utils'
 import WalletModal from '@/components/WalletModal'
 import Navbar from '@/components/Navbar'
-import FraudRingTable from '@/components/FraudRingTable'
-import GraphView from '@/components/GraphView'
-import NodeDetailPanel from '@/components/NodeDetailPanel'
+import ReagraphView from '@/components/ReagraphView'
+import DetailsTab from '@/components/DetailsTab'
 import SummaryBar from '@/components/SummaryBar'
 import ToastContainer from '@/components/ToastContainer'
 
-const STORAGE_KEY = 'rift_analysis_result'
 
 export default function AnalysisPage() {
   const router = useRouter()
@@ -28,6 +25,7 @@ export default function AnalysisPage() {
   const [isAnchoring, setIsAnchoring] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [isDark, setIsDark] = useState(true)
+  const [showDetailsPanel, setShowDetailsPanel] = useState(true)
 
   const addToast = useCallback(
     (message: string, type: Toast['type'] = 'info') => {
@@ -85,7 +83,12 @@ export default function AnalysisPage() {
         pattern_type: r.pattern_type,
         risk_score: r.risk_score,
       })),
-      summary: analysisResult.summary,
+      summary: {
+        total_accounts_analyzed: analysisResult.summary.total_accounts_analyzed,
+        suspicious_accounts_flagged: analysisResult.summary.suspicious_accounts_flagged,
+        fraud_rings_detected: analysisResult.summary.fraud_rings_detected,
+        processing_time_seconds: analysisResult.summary.processing_time_seconds,
+      },
     }
     const blob = new Blob([JSON.stringify(report, null, 2)], {
       type: 'application/json',
@@ -130,7 +133,12 @@ export default function AnalysisPage() {
           pattern_type: r.pattern_type,
           risk_score: r.risk_score,
         })),
-        summary: analysisResult.summary,
+        summary: {
+          total_accounts_analyzed: analysisResult.summary.total_accounts_analyzed,
+          suspicious_accounts_flagged: analysisResult.summary.suspicious_accounts_flagged,
+          fraud_rings_detected: analysisResult.summary.fraud_rings_detected,
+          processing_time_seconds: analysisResult.summary.processing_time_seconds,
+        },
       }
 
       const reportJson = JSON.stringify(report)
@@ -166,8 +174,9 @@ export default function AnalysisPage() {
     }
   }, [analysisResult, walletMnemonic, walletAddress, addToast])
 
-  const handleNewAnalysis = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY)
+  const handleNewAnalysis = useCallback(async () => {
+    const { clearAnalysis } = await import('@/lib/db')
+    await clearAnalysis()
     setAnalysisResult(null)
     setSelectedNode(null)
     setSelectedRing(null)
@@ -180,29 +189,28 @@ export default function AnalysisPage() {
   }, [isDark])
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
+    async function loadData() {
       try {
-        const result = deserializeAnalysisResult(stored) as AnalysisResult
-        setAnalysisResult(result)
+        const { loadAnalysis } = await import('@/lib/db')
+        const result = await loadAnalysis()
+        if (result) {
+          setAnalysisResult(result)
+        } else {
+          router.push('/')
+        }
       } catch (err) {
         console.error('Failed to load analysis:', err)
-        localStorage.removeItem(STORAGE_KEY)
         router.push('/')
+      } finally {
+        setIsLoading(false)
       }
-    } else {
-      router.push('/')
     }
-    setIsLoading(false)
+    loadData()
   }, [router])
-
-  const selectedAccount = selectedNode
-    ? analysisResult?.all_accounts.get(selectedNode) || null
-    : null
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[var(--background)]">
+      <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center gap-4">
           <div className="relative w-16 h-16">
             <div className="absolute inset-0 border-2 border-[var(--border)]" />
@@ -221,31 +229,65 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
-      <Navbar
-        walletAddress={walletAddress}
-        onConnectWallet={() => setShowWalletModal(true)}
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(d => !d)}
-      />
-
-      <div className="flex flex-1 overflow-hidden">
-        <FraudRingTable
-          rings={analysisResult.fraud_rings}
-          selectedRing={selectedRing}
-          onSelectRing={setSelectedRing}
-        />
-        <GraphView
-          result={analysisResult}
-          selectedRing={selectedRing}
-          onNodeClick={setSelectedNode}
+    <div className="flex flex-col h-screen text-[var(--foreground)] overflow-hidden">
+      <div className="relative z-50">
+        <Navbar
+          walletAddress={walletAddress}
+          onConnectWallet={() => setShowWalletModal(true)}
           isDark={isDark}
-        />
-        <NodeDetailPanel
-          account={selectedAccount}
-          onClose={() => setSelectedNode(null)}
+          onToggleTheme={() => setIsDark(d => !d)}
+          showLegend={true}
         />
       </div>
+
+      <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          <div className="flex-1 h-full min-h-0">
+            <ReagraphView
+              result={analysisResult}
+              selectedRing={selectedRing}
+              onNodeClick={setSelectedNode}
+              isDark={isDark}
+            />
+          </div>
+
+          <button
+            onClick={() => setShowDetailsPanel(!showDetailsPanel)}
+            className={`
+              flex items-center justify-center w-8 h-full
+              bg-[var(--card)] border-y border-[var(--border)]
+              text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--card)]/90
+              transition-all duration-200 cursor-pointer
+              ${showDetailsPanel ? 'border-l' : 'border-r'}
+            `}
+            title={showDetailsPanel ? 'Hide details panel' : 'Show details panel'}
+          >
+            <span className={`text-sm font-bold transition-transform duration-200 ${showDetailsPanel ? '' : 'rotate-180'}`}>
+              ❮
+            </span>
+          </button>
+
+          <div
+            className={`
+              h-full overflow-hidden transition-all duration-300 ease-in-out
+              ${showDetailsPanel ? 'w-96 opacity-100' : 'w-0 opacity-0'}
+            `}
+          >
+            <div className={`
+              h-full w-96
+              bg-[var(--card)]/80 backdrop-blur-xl
+              border-l border-[var(--border)]
+            `}>
+              <DetailsTab
+                result={analysisResult}
+                selectedNode={selectedNode}
+                onNodeClick={setSelectedNode}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <SummaryBar
         summary={analysisResult.summary}
         onDownloadJSON={handleDownloadJSON}
@@ -256,7 +298,7 @@ export default function AnalysisPage() {
 
       <button
         onClick={handleNewAnalysis}
-        className="fixed top-3 left-1/2 -translate-x-1/2 z-40 px-3 py-1 border border-[var(--border)] bg-[var(--card)] text-[10px] font-mono text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:border-[#FF2D55]/50 transition-all tracking-wider"
+        className="fixed top-3 left-1/2 -translate-x-1/2 z-40 px-3 py-1 border border-[var(--border)] bg-[var(--card)] text-sm font-mono text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:border-[#FF2D55]/50 transition-all tracking-wider"
       >
         NEW ANALYSIS
       </button>

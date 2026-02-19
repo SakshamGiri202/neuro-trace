@@ -12,7 +12,7 @@ const REQUIRED_COLUMNS = [
   'timestamp',
 ]
 
-export default function UploadZone({ onDataLoaded, isAnalyzing }: UploadZoneProps) {
+export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -25,6 +25,10 @@ export default function UploadZone({ onDataLoaded, isAnalyzing }: UploadZoneProp
         return
       }
 
+      // Pass the file to the parent for backend processing
+      onFileLoaded(file)
+
+      // Also parse locally for immediate data validation (optional but good for UX)
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
@@ -61,7 +65,7 @@ export default function UploadZone({ onDataLoaded, isAnalyzing }: UploadZoneProp
         },
       })
     },
-    [onDataLoaded]
+    [onDataLoaded, onFileLoaded]
   )
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -80,27 +84,9 @@ export default function UploadZone({ onDataLoaded, isAnalyzing }: UploadZoneProp
     setError(null)
     try {
       const response = await fetch('/data/sample_transactions.csv')
-      const csv = await response.text()
-      const result = Papa.parse(csv, {
-        header: true,
-        skipEmptyLines: true,
-      })
-      
-      if (!result.data || result.data.length === 0) {
-        setError('EMPTY DATASET: No rows found')
-        return
-      }
-
-      const rows: TxRow[] = (
-        result.data as Record<string, string>[]
-      ).map((r) => ({
-        transaction_id: r.transaction_id,
-        sender_id: r.sender_id,
-        receiver_id: r.receiver_id,
-        amount: parseFloat(r.amount) || 0,
-        timestamp: new Date(r.timestamp),
-      }))
-      onDataLoaded(rows)
+      const blob = await response.blob()
+      const file = new File([blob], 'sample_transactions.csv', { type: 'text/csv' })
+      processFile(file)
     } catch {
       setError('LOAD ERROR: Could not load sample data')
     }
@@ -124,7 +110,7 @@ export default function UploadZone({ onDataLoaded, isAnalyzing }: UploadZoneProp
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg bg-[var(--card)] border border-[var(--border)] p-8 mt-[-10vh] shadow-lg">
         <div
           onDragOver={(e) => {
             e.preventDefault()
@@ -135,10 +121,9 @@ export default function UploadZone({ onDataLoaded, isAnalyzing }: UploadZoneProp
           onClick={() => fileInputRef.current?.click()}
           className={`
             relative cursor-pointer p-10 text-center border-2 border-dashed transition-all
-            ${
-              isDragging
-                ? 'border-[var(--primary)] bg-[var(--primary)]/5 glow-cyan'
-                : 'border-[var(--border)] hover:border-[var(--primary)]/50'
+            ${isDragging
+              ? 'border-[var(--primary)] bg-[var(--primary)]/10 glow-cyan'
+              : 'border-[var(--border)] hover:border-[var(--primary)]/50 bg-[var(--background)]'
             }
           `}
           style={{ borderRadius: '2px' }}

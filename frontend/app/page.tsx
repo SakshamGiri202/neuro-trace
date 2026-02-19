@@ -3,13 +3,10 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { TxRow, Toast } from '@/lib/types'
-import { runAnalysis } from '@/lib/analysis'
-import { serializeAnalysisResult } from '@/lib/utils'
 import Navbar from '@/components/Navbar'
 import UploadZone from '@/components/UploadZone'
 import ToastContainer from '@/components/ToastContainer'
 
-const STORAGE_KEY = 'rift_analysis_result'
 
 export default function HomePage() {
   const router = useRouter()
@@ -50,30 +47,77 @@ export default function HomePage() {
   }, [])
 
   const handleDataLoaded = useCallback(
-    (rows: TxRow[]) => {
-      setIsAnalyzing(true)
+    (_rows: TxRow[]) => {
+      // Local parsing done for validation, but we'll wait for backend
+    },
+    []
+  )
 
-      setTimeout(() => {
-        try {
-          const result = runAnalysis(rows)
-          const serialized = serializeAnalysisResult(result)
-          localStorage.setItem(STORAGE_KEY, serialized)
-          
-          addToast(
-            `Analysis complete. ${result.summary.suspicious_accounts_flagged} accounts flagged across ${result.summary.fraud_rings_detected} rings.`,
-            'success'
-          )
-          
-          router.push('/analysis')
-        } catch (err) {
-          addToast(
-            `Analysis failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
-            'error'
-          )
-        } finally {
-          setIsAnalyzing(false)
+  const handleFileLoaded = useCallback(
+    async (file: File) => {
+      setIsAnalyzing(true)
+      try {
+        const { uploadTransactions } = await import('@/lib/api')
+        const backendResult = await uploadTransactions(file)
+
+        // Convert the backend result (plain objects) to the internal AnalysisResult format
+        // which uses Maps and Sets for efficiency and type-safety.
+        const allAccountsMap = new Map()
+        Object.entries(backendResult.all_accounts).forEach(([id, acc]: [string, any]) => {
+          allAccountsMap.set(id, acc)
+        })
+
+        const communitiesMap = new Map()
+        Object.entries(backendResult.communities).forEach(([id, comm]: [string, any]) => {
+          communitiesMap.set(id, comm)
+        })
+
+        const edges = backendResult.edges.map((e: any) => ({
+          from: e.from_account,
+          to: e.to_account,
+          amount: e.amount,
+          suspicious: e.suspicious
+        }))
+
+        const adj: Record<string, Set<string>> = {}
+        Object.entries(backendResult.adj).forEach(([id, neighbors]: [string, any]) => {
+          adj[id] = new Set(neighbors)
+        })
+
+        const reverseAdj: Record<string, Set<string>> = {}
+        Object.entries(backendResult.reverse_adj).forEach(([id, neighbors]: [string, any]) => {
+          reverseAdj[id] = new Set(neighbors)
+        })
+
+        const result = {
+          ...backendResult,
+          all_accounts: allAccountsMap,
+          communities: communitiesMap,
+          edges: edges,
+          adj: adj,
+          reverseAdj: reverseAdj,
+          nodeDegrees: backendResult.node_degrees
         }
-      }, 400)
+
+        const { saveAnalysis } = await import('@/lib/db')
+        await saveAnalysis(result)
+
+        addToast(
+          `Backend analysis complete. ${result.summary.suspicious_accounts_flagged} accounts flagged.`,
+          'success'
+        )
+
+        router.push('/analysis')
+      } catch (err) {
+        console.error('Upload error:', err)
+        const errorMessage = err instanceof Error ? err.message : (typeof err === 'object' ? JSON.stringify(err) : String(err))
+        addToast(
+          `Backend analysis failed: ${errorMessage}`,
+          'error'
+        )
+      } finally {
+        setIsAnalyzing(false)
+      }
     },
     [addToast, router]
   )
@@ -95,7 +139,7 @@ export default function HomePage() {
   )
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+    <div className="flex flex-col h-screen text-[var(--foreground)] overflow-hidden">
       <Navbar
         walletAddress={walletAddress}
         onConnectWallet={() => setShowWalletModal(true)}
@@ -105,6 +149,7 @@ export default function HomePage() {
 
       <UploadZone
         onDataLoaded={handleDataLoaded}
+        onFileLoaded={handleFileLoaded}
         isAnalyzing={isAnalyzing}
       />
 

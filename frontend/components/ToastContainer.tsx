@@ -37,7 +37,7 @@ export default function ToastContainer({
               </p>
               <button
                 onClick={() => onDismiss(toast.id)}
-                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px] font-mono shrink-0"
+                className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-sm font-mono shrink-0"
               >
                 [X]
               </button>
