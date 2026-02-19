@@ -29,12 +29,13 @@ from app.services.ring_grouper import group_rings
 
 router = APIRouter(prefix="/api", tags=["upload"])
 last_analysis_result: AnalysisResponse | None = None
+last_dataframe: pd.DataFrame | None = None
 
 
 @router.post("/upload")
 async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
     """Upload and analyze a CSV file for fraud detection."""
-    global last_analysis_result
+    global last_analysis_result, last_dataframe
 
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
@@ -105,6 +106,7 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
         ),
     )
     last_analysis_result = response
+    last_dataframe = df
     return response
 
 
@@ -114,3 +116,79 @@ async def hash_report_endpoint(request: HashReportRequest) -> HashReportResponse
     return HashReportResponse(
         sha256_hash=hash_report(request.report), timestamp=get_timestamp()
     )
+
+
+@router.get("/graph/cytoscape")
+async def get_cytoscape_graph():
+    """Get graph data in Cytoscape.js format for visualization."""
+    global last_analysis_result, last_dataframe
+
+    if last_analysis_result is None or last_dataframe is None:
+        raise HTTPException(status_code=404, detail="No analysis has been run yet")
+
+    from app.services.graph_builder import build_graph
+
+    G = build_graph(last_dataframe)
+
+    suspicious_account_ids = {
+        acc.account_id for acc in last_analysis_result.suspicious_accounts
+    }
+    ring_map = {
+        acc.account_id: acc.ring_id for acc in last_analysis_result.suspicious_accounts
+    }
+    score_map = {
+        acc.account_id: acc.suspicion_score
+        for acc in last_analysis_result.suspicious_accounts
+    }
+
+    nodes = []
+    for node in G.nodes():
+        in_deg = G.in_degree(node)
+        out_deg = G.out_degree(node)
+
+        total_sent = sum(G[u][v]["amount"] for u, v in G.out_edges(node))
+        total_received = sum(G[u][v]["amount"] for u, v in G.in_edges(node))
+
+        is_suspicious = node in suspicious_account_ids
+
+        if is_suspicious:
+            node_type = "suspicious"
+            ring_id = ring_map.get(node, "")
+            score = score_map.get(node, 0)
+        else:
+            node_type = "normal"
+            ring_id = ""
+            score = 0
+
+        nodes.append(
+            {
+                "data": {
+                    "id": node,
+                    "label": node,
+                    "type": node_type,
+                    "ring_id": ring_id,
+                    "score": score,
+                    "in_degree": in_deg,
+                    "out_degree": out_deg,
+                    "total_sent": total_sent,
+                    "total_received": total_received,
+                }
+            }
+        )
+
+    edges = []
+    for u, v in G.edges():
+        edge_data = G[u][v]
+        edges.append(
+            {
+                "data": {
+                    "id": f"{u}-{v}",
+                    "source": u,
+                    "target": v,
+                    "amount": edge_data["amount"],
+                    "transaction_id": edge_data["transaction_id"],
+                }
+            }
+        )
+
+    return {"nodes": nodes, "edges": edges}

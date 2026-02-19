@@ -29,6 +29,11 @@ app.include_router(upload.router)
 app.include_router(rings.router)
 app.include_router(accounts.router)
 
+@app.on_event("startup")
+async def startup_event():
+    print("RingBreaker API starting up...")
+    print("Services initialized successfully")
+
 
 @app.get("/")
 async def root() -> Dict[str, Any]:

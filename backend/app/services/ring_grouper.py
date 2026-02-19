@@ -69,14 +69,8 @@ def group_rings(
             pattern_type = "mixed"
 
         member_list = sorted(list(members))
-        risk_score = (
-            round(
-                sum(score_map.get(acc, 0.0) for acc in member_list) / len(member_list),
-                1,
-            )
-            if member_list
-            else 0.0
-        )
+        member_scores = [score_map.get(acc, 0.0) for acc in member_list]
+        risk_score = round(max(member_scores), 1) if member_scores else 0.0
 
         fraud_rings.append(
             {

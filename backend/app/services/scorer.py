@@ -46,7 +46,7 @@ def score_accounts(
                 if account in cycle:
                     length = len(cycle)
                     patterns.append(f"cycle_length_{length}")
-                    score += 40
+                    score += 50
                     break
 
         smurf_match = next(
@@ -54,15 +54,15 @@ def score_accounts(
         )
         if smurf_match:
             patterns.extend(smurf_match["patterns"])
-            score += 25
+            score += 30
 
         if account in shell_accounts:
             patterns.append("shell_chain")
-            score += 20
+            score += 25
 
         if smurf_match and smurf_match.get("is_temporal", False):
             patterns.append("high_velocity")
-            score += 10
+            score += 15
 
         account_txs = df[(df["sender_id"] == account) | (df["receiver_id"] == account)]
         if not account_txs.empty:
@@ -72,12 +72,12 @@ def score_accounts(
             ) <= timedelta(hours=72):
                 if "high_velocity" not in patterns:
                     patterns.append("high_velocity")
-                    score += 10
+                    score += 15
 
         max_amount = account_txs["amount"].max() if not account_txs.empty else 0
         if avg_amount > 0 and max_amount > avg_amount * 5:
             patterns.append("high_value_outlier")
-            score += 5
+            score += 10
 
         scored_accounts.append(
             {

@@ -265,3 +265,38 @@ def test_account_not_found():
 
     response = client.get("/api/accounts/NONEXISTENT")
     assert response.status_code == 404
+
+
+def test_cytoscape_graph_after_upload(mixed_csv_data: pd.DataFrame):
+    """Test GET /api/graph/cytoscape returns Cytoscape.js format."""
+    csv_buffer = df_to_bytesio(mixed_csv_data)
+
+    client.post(
+        "/api/upload",
+        files={"file": ("test.csv", csv_buffer, "text/csv")},
+    )
+
+    response = client.get("/api/graph/cytoscape")
+    assert response.status_code == 200
+    graph_data = response.json()
+
+    assert "nodes" in graph_data
+    assert "edges" in graph_data
+    assert isinstance(graph_data["nodes"], list)
+    assert isinstance(graph_data["edges"], list)
+
+    suspicious_nodes = [
+        n for n in graph_data["nodes"] if n["data"]["type"] == "suspicious"
+    ]
+    assert len(suspicious_nodes) > 0
+
+
+def test_cytoscape_graph_no_analysis():
+    """Test GET /api/graph/cytoscape returns 404 when no analysis."""
+    from app.routers import upload
+
+    upload.last_analysis_result = None
+    upload.last_dataframe = None
+
+    response = client.get("/api/graph/cytoscape")
+    assert response.status_code == 404
