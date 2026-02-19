@@ -139,7 +139,7 @@ export default function HomePage() {
   )
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+    <div className="flex flex-col h-screen text-[var(--foreground)] overflow-hidden">
       <Navbar
         walletAddress={walletAddress}
         onConnectWallet={() => setShowWalletModal(true)}

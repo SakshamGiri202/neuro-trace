@@ -44,23 +44,7 @@ export default function NavBar({
           )}
           {isDark ? 'LIGHT' : 'DARK'}
         </button>
-        <button
-          onClick={onConnectWallet}
-          className="flex items-center gap-2 px-3 py-1.5 border border-[var(--border)] bg-[var(--background)] text-xs font-mono text-[var(--primary)] hover:border-[var(--primary)] hover:glow-cyan transition-all"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="2" y="6" width="20" height="14" rx="0" />
-            <path d="M17 12h.01" />
-            <path d="M2 10h20" />
-          </svg>
-          {walletAddress ? (
-            <span>
-              {walletAddress.slice(0, 4)}...{walletAddress.slice(-4)}
-            </span>
-          ) : (
-            'CONNECT WALLET'
-          )}
-        </button>
+
       </div>
     </header>
   )

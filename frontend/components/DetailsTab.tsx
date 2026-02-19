@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { AnalysisResult, AccountAnalysis, FraudRing } from '@/lib/types'
 import SuspicionGauge from './SuspicionGauge'
 
@@ -23,6 +23,29 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
   const filteredSuspicious = result.suspicious_accounts.filter(acc =>
     acc.account_id.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  useEffect(() => {
+    if (!selectedNode) {
+      setSelectedItem(null)
+      return
+    }
+
+    // Try to find it in suspicious accounts first
+    const susAcc = result.suspicious_accounts.find(
+      (a) => a.account_id === selectedNode
+    )
+    if (susAcc) {
+      setSelectedItem({ type: 'node', data: susAcc })
+      setActiveList('nodes')
+      return
+    }
+
+    // Otherwise find it in safe accounts
+    const safeAcc = result.all_accounts.get?.(selectedNode) || (result.all_accounts as any)[selectedNode]
+    if (safeAcc) {
+      setSelectedItem({ type: 'node', data: safeAcc })
+    }
+  }, [selectedNode, result])
 
   const handleNodeClick = (account: AccountAnalysis) => {
     const newItem = { type: 'node' as const, data: account }

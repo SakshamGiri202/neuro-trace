@@ -110,7 +110,7 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg bg-[var(--card)] border border-[var(--border)] p-8 mt-[-10vh] shadow-lg">
         <div
           onDragOver={(e) => {
             e.preventDefault()
@@ -122,8 +122,8 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
           className={`
             relative cursor-pointer p-10 text-center border-2 border-dashed transition-all
             ${isDragging
-              ? 'border-[var(--primary)] bg-[var(--primary)]/5 glow-cyan'
-              : 'border-[var(--border)] hover:border-[var(--primary)]/50'
+              ? 'border-[var(--primary)] bg-[var(--primary)]/10 glow-cyan'
+              : 'border-[var(--border)] hover:border-[var(--primary)]/50 bg-[var(--background)]'
             }
           `}
           style={{ borderRadius: '2px' }}

@@ -83,7 +83,12 @@ export default function AnalysisPage() {
         pattern_type: r.pattern_type,
         risk_score: r.risk_score,
       })),
-      summary: analysisResult.summary,
+      summary: {
+        total_accounts_analyzed: analysisResult.summary.total_accounts_analyzed,
+        suspicious_accounts_flagged: analysisResult.summary.suspicious_accounts_flagged,
+        fraud_rings_detected: analysisResult.summary.fraud_rings_detected,
+        processing_time_seconds: analysisResult.summary.processing_time_seconds,
+      },
     }
     const blob = new Blob([JSON.stringify(report, null, 2)], {
       type: 'application/json',
@@ -128,7 +133,12 @@ export default function AnalysisPage() {
           pattern_type: r.pattern_type,
           risk_score: r.risk_score,
         })),
-        summary: analysisResult.summary,
+        summary: {
+          total_accounts_analyzed: analysisResult.summary.total_accounts_analyzed,
+          suspicious_accounts_flagged: analysisResult.summary.suspicious_accounts_flagged,
+          fraud_rings_detected: analysisResult.summary.fraud_rings_detected,
+          processing_time_seconds: analysisResult.summary.processing_time_seconds,
+        },
       }
 
       const reportJson = JSON.stringify(report)
@@ -200,7 +210,7 @@ export default function AnalysisPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[var(--background)]">
+      <div className="flex items-center justify-center h-screen">
         <div className="flex flex-col items-center gap-4">
           <div className="relative w-16 h-16">
             <div className="absolute inset-0 border-2 border-[var(--border)]" />
@@ -219,7 +229,7 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
+    <div className="flex flex-col h-screen text-[var(--foreground)] overflow-hidden">
       <div className="relative z-50">
         <Navbar
           walletAddress={walletAddress}

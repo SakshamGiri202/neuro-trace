@@ -38,6 +38,7 @@
   --sidebar-accent-foreground: #1A1A2E;
   --sidebar-border: #D4D4DC;
   --sidebar-ring: #0094A8;
+  --diagonal-line: #707080;
 }
 
 .dark {
@@ -75,6 +76,7 @@
   --sidebar-accent-foreground: #E0E0E8;
   --sidebar-border: #1E1E2E;
   --sidebar-ring: #00F5FF;
+  --diagonal-line: #4A4A58;
 }
 
 @theme inline {
@@ -124,8 +126,19 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
   }
+}
+
+.bg-diagonal-lines {
+  background-color: var(--background);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--diagonal-line) 0px,
+    var(--diagonal-line) 1px,
+    transparent 1px,
+    transparent 12px
+  );
 }
 
 /* ===== RIFT FORENSICS ENGINE ANIMATIONS ===== */

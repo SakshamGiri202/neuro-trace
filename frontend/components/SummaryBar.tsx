@@ -52,38 +52,11 @@ export default function SummaryBar({
           >
             DOWNLOAD JSON
           </button>
-          <button
-            onClick={onAnchor}
-            disabled={isAnchoring}
-            className={`px-4 py-1.5 border text-[10px] font-mono tracking-wider transition-all ${txId
-                ? 'border-green-500/40 text-green-500 bg-green-500/10'
-                : isAnchoring
-                  ? 'border-[#FFB800]/40 text-[#FFB800] opacity-60 cursor-wait'
-                  : 'border-[#FFB800]/40 text-[#FFB800] hover:bg-[#FFB800]/10 hover:border-[#FFB800]'
-              }`}
-          >
-            {txId
-              ? 'ANCHORED'
-              : isAnchoring
-                ? 'ANCHORING...'
-                : 'ANCHOR TO ALGORAND'}
-          </button>
+
         </div>
       </div>
 
-      {txId && (
-        <div className="mt-2 flex items-center gap-2 animate-fade-in-up">
-          <span className="text-[10px] font-mono text-[var(--muted-foreground)]">TX:</span>
-          <a
-            href={`https://testnet.algoexplorer.io/tx/${txId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] font-mono text-[var(--primary)] underline underline-offset-2 break-all hover:text-[var(--primary)]/80"
-          >
-            {txId}
-          </a>
-        </div>
-      )}
+
     </footer>
   )
 }
