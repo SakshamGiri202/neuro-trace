@@ -10,7 +10,7 @@ interface DetailsTabProps {
   onNodeClick: (accountId: string) => void
 }
 
-type SelectedItem = 
+type SelectedItem =
   | { type: 'node'; data: AccountAnalysis }
   | { type: 'ring'; data: FraudRing }
   | null
@@ -18,6 +18,11 @@ type SelectedItem =
 export default function DetailsTab({ result, selectedNode, onNodeClick }: DetailsTabProps) {
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null)
   const [activeList, setActiveList] = useState<'nodes' | 'rings'>('nodes')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredSuspicious = result.suspicious_accounts.filter(acc =>
+    acc.account_id.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const handleNodeClick = (account: AccountAnalysis) => {
     const newItem = { type: 'node' as const, data: account }
@@ -42,56 +47,74 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
     (acc) => acc.suspicion_score < 30
   )
 
+  const DISPLAY_LIMIT = 100
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex border-b border-[var(--border)]">
         <button
           onClick={() => setActiveList('nodes')}
-          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${
-            activeList === 'nodes'
-              ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
-              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
-          }`}
+          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${activeList === 'nodes'
+            ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
+            : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
+            }`}
         >
           NODES ({result.suspicious_accounts.length})
         </button>
         <button
           onClick={() => setActiveList('rings')}
-          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${
-            activeList === 'rings'
-              ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
-              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
-          }`}
+          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${activeList === 'rings'
+            ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
+            : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
+            }`}
         >
           RINGS ({result.fraud_rings.length})
         </button>
       </div>
 
+      <div className="p-2 border-b border-[var(--border)] bg-[var(--background)]/50">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search account ID..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[var(--background)] border border-[var(--border)] px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-[var(--primary)] placeholder:text-[var(--muted-foreground)]/50"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px]"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto">
         {activeList === 'nodes' ? (
           <div className="p-2 space-y-1">
-            {result.suspicious_accounts.map((account) => (
+            {filteredSuspicious.slice(0, DISPLAY_LIMIT).map((account) => (
               <button
                 key={account.account_id}
                 onClick={() => handleNodeClick(account)}
-                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${
-                  selectedItem?.type === 'node' && selectedItem.data.account_id === account.account_id
-                    ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
-                    : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
-                }`}
+                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${selectedItem?.type === 'node' && selectedItem.data.account_id === account.account_id
+                  ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
+                  : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono text-[var(--foreground)] truncate max-w-[120px]">
                     {account.account_id.slice(0, 8)}...
                   </span>
                   <span
-                    className={`text-[10px] font-mono font-bold ${
-                      account.suspicion_score > 80
-                        ? 'text-[var(--destructive)]'
-                        : account.suspicion_score >= 50
-                          ? 'text-[#FFB800]'
-                          : 'text-[var(--primary)]'
-                    }`}
+                    className={`text-[10px] font-mono font-bold ${account.suspicion_score > 80
+                      ? 'text-[var(--destructive)]'
+                      : account.suspicion_score >= 50
+                        ? 'text-[#FFB800]'
+                        : 'text-[var(--primary)]'
+                      }`}
                   >
                     {account.suspicion_score}
                   </span>
@@ -108,6 +131,21 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
                 </div>
               </button>
             ))}
+            {filteredSuspicious.length > DISPLAY_LIMIT && (
+              <div className="text-center py-2 border border-dashed border-[var(--border)]">
+                <p className="text-[9px] font-mono text-[var(--muted-foreground)] uppercase tracking-tighter">
+                  Showing {DISPLAY_LIMIT} of {filteredSuspicious.length} matches
+                </p>
+                <p className="text-[8px] font-mono text-[var(--muted-foreground)] italic">
+                  Refine search to find specific nodes
+                </p>
+              </div>
+            )}
+            {filteredSuspicious.length === 0 && (
+              <div className="text-center py-4 text-[10px] font-mono text-[var(--muted-foreground)] italic">
+                No matching accounts found
+              </div>
+            )}
           </div>
         ) : (
           <div className="p-2 space-y-1">
@@ -115,24 +153,22 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
               <button
                 key={ring.ring_id}
                 onClick={() => handleRingClick(ring)}
-                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${
-                  selectedItem?.type === 'ring' && selectedItem.data.ring_id === ring.ring_id
-                    ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
-                    : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
-                }`}
+                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${selectedItem?.type === 'ring' && selectedItem.data.ring_id === ring.ring_id
+                  ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
+                  : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono text-[var(--foreground)]">
                     {ring.ring_id}
                   </span>
                   <span
-                    className={`text-[10px] font-mono font-bold ${
-                      ring.risk_score > 80
-                        ? 'text-[var(--destructive)]'
-                        : ring.risk_score >= 50
-                          ? 'text-[#FFB800]'
-                          : 'text-[var(--primary)]'
-                    }`}
+                    className={`text-[10px] font-mono font-bold ${ring.risk_score > 80
+                      ? 'text-[var(--destructive)]'
+                      : ring.risk_score >= 50
+                        ? 'text-[#FFB800]'
+                        : 'text-[var(--primary)]'
+                      }`}
                   >
                     {ring.risk_score}
                   </span>
@@ -167,7 +203,7 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
           SAFE NODES ({safeAccounts.length})
         </div>
         <div className="max-h-20 overflow-y-auto space-y-1">
-          {safeAccounts.slice(0, 8).map((account) => (
+          {safeAccounts.slice(0, 50).map((account) => (
             <div
               key={account.account_id}
               className="flex items-center justify-between px-2 py-1 text-[9px] font-mono text-[var(--muted-foreground)]"
@@ -176,9 +212,9 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
               <span className="text-[var(--primary)]">{account.suspicion_score}</span>
             </div>
           ))}
-          {safeAccounts.length > 8 && (
+          {safeAccounts.length > 50 && (
             <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center py-1">
-              +{safeAccounts.length - 8} more
+              +{safeAccounts.length - 50} more (use search to find specific nodes)
             </div>
           )}
         </div>
@@ -228,11 +264,10 @@ function NodeDetailsCompact({ account, onClear }: { account: AccountAnalysis; on
               return (
                 <span
                   key={`${p}-${i}`}
-                  className={`text-[8px] font-mono px-1.5 py-0.5 ${
-                    isHighRisk
-                      ? 'bg-[var(--destructive)]/20 text-[var(--destructive)] border border-[#FF2D55]/40'
-                      : 'bg-transparent text-[var(--primary)] border border-[var(--primary)]/40'
-                  }`}
+                  className={`text-[8px] font-mono px-1.5 py-0.5 ${isHighRisk
+                    ? 'bg-[var(--destructive)]/20 text-[var(--destructive)] border border-[#FF2D55]/40'
+                    : 'bg-transparent text-[var(--primary)] border border-[var(--primary)]/40'
+                    }`}
                 >
                   {p.toUpperCase()}
                 </span>

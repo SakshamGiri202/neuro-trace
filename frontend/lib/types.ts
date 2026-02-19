@@ -71,6 +71,7 @@ export interface NavBarProps {
 
 export interface UploadZoneProps {
   onDataLoaded: (rows: TxRow[]) => void
+  onFileLoaded: (file: File) => void
   isAnalyzing: boolean
 }
 

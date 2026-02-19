@@ -49,7 +49,7 @@ export default function GraphView({
 
     const container = containerRef.current
     const svg = d3.select(svgRef.current)
-    
+
     const width = container.clientWidth || 1200
     const height = container.clientHeight || 1400
 
@@ -78,10 +78,10 @@ export default function GraphView({
         amount: e.amount,
       }))
 
-    const filteredNodes = nodes.filter(n => 
+    const filteredNodes = nodes.filter(n =>
       n.suspicious || n.degree >= controls.minDegree
     )
-    
+
     const filteredNodeIds = new Set(filteredNodes.map(n => n.id))
     const filteredLinks = links.filter(l => {
       const sourceId = typeof l.source === 'string' ? l.source : (l.source as D3Node).id
@@ -207,13 +207,18 @@ export default function GraphView({
       node.attr('transform', d => `translate(${d.x || 0},${d.y || 0})`)
     })
 
+    const pulseRef = { active: true }
     const suspiciousNodes = filteredNodes.filter(n => n.suspicious)
+    let pulseTimeout: NodeJS.Timeout
+
     if (suspiciousNodes.length > 0) {
       let pulseIndex = 0
       const pulseNode = () => {
+        if (!pulseRef.active) return
         if (pulseIndex >= suspiciousNodes.length) pulseIndex = 0
         const d = suspiciousNodes[pulseIndex]
         const circle = node.filter(n => n.id === d.id).select('circle')
+
         circle
           .transition()
           .duration(600)
@@ -224,15 +229,21 @@ export default function GraphView({
           .attr('stroke-width', 2)
           .attr('r', 12)
           .on('end', () => {
-            pulseIndex++
-            setTimeout(pulseNode, 50)
+            if (pulseRef.active) {
+              pulseIndex++
+              pulseTimeout = setTimeout(pulseNode, 50)
+            }
           })
       }
-      setTimeout(pulseNode, 1000)
+      pulseTimeout = setTimeout(pulseNode, 1000)
     }
 
     return () => {
+      pulseRef.active = false
+      if (pulseTimeout) clearTimeout(pulseTimeout)
       simulation.stop()
+      svg.selectAll('*').interrupt() // Stop any ongoing transitions
+      svg.selectAll('*').remove()
     }
   }, [result, controls.minDegree, controls.showClusters, isDark, onNodeClick])
 

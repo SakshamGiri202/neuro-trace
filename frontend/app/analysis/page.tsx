@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AnalysisResult, Toast } from '@/lib/types'
 import { sha256 } from '@/lib/utils'
-import { deserializeAnalysisResult } from '@/lib/utils'
 import WalletModal from '@/components/WalletModal'
 import Navbar from '@/components/Navbar'
 import ReagraphView from '@/components/ReagraphView'
@@ -12,7 +11,6 @@ import DetailsTab from '@/components/DetailsTab'
 import SummaryBar from '@/components/SummaryBar'
 import ToastContainer from '@/components/ToastContainer'
 
-const STORAGE_KEY = 'rift_analysis_result'
 
 export default function AnalysisPage() {
   const router = useRouter()
@@ -166,8 +164,9 @@ export default function AnalysisPage() {
     }
   }, [analysisResult, walletMnemonic, walletAddress, addToast])
 
-  const handleNewAnalysis = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY)
+  const handleNewAnalysis = useCallback(async () => {
+    const { clearAnalysis } = await import('@/lib/db')
+    await clearAnalysis()
     setAnalysisResult(null)
     setSelectedNode(null)
     setSelectedRing(null)
@@ -180,20 +179,23 @@ export default function AnalysisPage() {
   }, [isDark])
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
+    async function loadData() {
       try {
-        const result = deserializeAnalysisResult(stored) as AnalysisResult
-        setAnalysisResult(result)
+        const { loadAnalysis } = await import('@/lib/db')
+        const result = await loadAnalysis()
+        if (result) {
+          setAnalysisResult(result)
+        } else {
+          router.push('/')
+        }
       } catch (err) {
         console.error('Failed to load analysis:', err)
-        localStorage.removeItem(STORAGE_KEY)
         router.push('/')
+      } finally {
+        setIsLoading(false)
       }
-    } else {
-      router.push('/')
     }
-    setIsLoading(false)
+    loadData()
   }, [router])
 
   if (isLoading) {

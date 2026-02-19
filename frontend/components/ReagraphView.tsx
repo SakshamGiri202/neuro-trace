@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { GraphCanvas, darkTheme, lightTheme } from 'reagraph'
 import type { GraphViewProps } from '@/lib/types'
 
@@ -40,90 +40,42 @@ export default function ReagraphView({
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
 
-  const { nodes, edges } = useMemo(() => {
-    const nodeList: ReagraphNode[] = []
-    const suspiciousIds = new Set<string>()
+  const [nodes, setNodes] = useState<ReagraphNode[]>([])
+  const [edges, setEdges] = useState<ReagraphEdge[]>([])
+  const [isSampled, setIsSampled] = useState(false)
+  const [isComputing, setIsComputing] = useState(false)
 
-    // Calculate stats for normalization
-    let maxTx = 0
-    let maxAmount = 0
+  useEffect(() => {
+    if (!result) return
 
-    result.all_accounts.forEach(account => {
-      maxTx = Math.max(maxTx, account.total_transactions)
-    })
+    setIsComputing(true)
+    const worker = new Worker(new URL('../lib/graph.worker.ts', import.meta.url))
 
-    result.edges.forEach(edge => {
-      maxAmount = Math.max(maxAmount, edge.amount)
-    })
+    worker.postMessage({ result })
 
-    result.all_accounts.forEach((account, id) => {
-      const suspicious = account.suspicion_score > 0.5
-      const riskScore = account.suspicion_score
-
-      if (suspicious) suspiciousIds.add(id)
-
-      // Dynamic sizing based on transaction volume (log scale)
-      // Base size 15, max additional size 25
-      const sizeList = Math.log(account.total_transactions + 1)
-      const sizeMax = Math.log(maxTx + 1) || 1
-      const normalizedSize = (sizeList / sizeMax) * 25
-      const nodeSize = 15 + normalizedSize
-
-      // Dynamic coloring based on risk score
-      let color = '#10B981' // Emerald-500 (Low Risk)
-      if (riskScore > 0.8) color = '#EF4444' // Red-500 (High Risk)
-      else if (riskScore > 0.4) color = '#F59E0B' // Amber-500 (Medium Risk)
-
-      nodeList.push({
-        id,
-        label: id.slice(0, 8),
-        fill: color,
-        data: {
-          label: id,
-          suspicious,
-          riskScore,
-          size: nodeSize // Pass size to data to be used in sizing
-        },
-      })
-    })
-
-    const edgeList: ReagraphEdge[] = []
-
-    result.edges.forEach((edge, idx) => {
-      const srcSus = suspiciousIds.has(edge.from)
-      const tgtSus = suspiciousIds.has(edge.to)
-
-      // Dynamic thickness based on amount (log scale)
-      const amtLog = Math.log(edge.amount + 1)
-      const maxAmtLog = Math.log(maxAmount + 1) || 1
-      const normalizedThickness = (amtLog / maxAmtLog) * 8
-      const thickness = 2 + normalizedThickness
-
-      let color = '#6EE7B7' // Emerald-300
-      let opacity = 0.5
-
-      if (srcSus && tgtSus) {
-        color = '#FCA5A5' // Red-300
-        opacity = 0.8
-      } else if (srcSus || tgtSus) {
-        color = '#FCD34D' // Amber-300
-        opacity = 0.6
+    worker.onmessage = (event) => {
+      if (event.data.error) {
+        console.error('Worker Script Error:', event.data.error)
+        setIsComputing(false)
+        worker.terminate()
+        return
       }
 
-      edgeList.push({
-        id: `edge-${idx}`,
-        source: edge.from,
-        target: edge.to,
-        fill: color,
-        data: {
-          amount: edge.amount,
-          thickness,
-          opacity
-        },
-      })
-    })
+      const { nodes: processedNodes, edges: processedEdges, isSampled: sampled } = event.data
+      setNodes(processedNodes)
+      setEdges(processedEdges)
+      setIsSampled(sampled)
+      setIsComputing(false)
+      worker.terminate()
+    }
 
-    return { nodes: nodeList, edges: edgeList }
+    worker.onerror = (err) => {
+      console.error('Worker error:', err)
+      setIsComputing(false)
+      worker.terminate()
+    }
+
+    return () => worker.terminate()
   }, [result])
 
   const activeNode = selectedNode || hoveredNode
@@ -141,9 +93,9 @@ export default function ReagraphView({
     if (!activeNode || !connectedNodeIds) return null
 
     const connected = new Set<string>()
-    edges.forEach((edge, idx) => {
+    edges.forEach((edge) => {
       if (edge.source === activeNode || edge.target === activeNode) {
-        connected.add(`edge-${idx}`)
+        connected.add(edge.id)
       }
     })
     return connected
@@ -172,8 +124,8 @@ export default function ReagraphView({
       }
     })
 
-    const dimmedEdges = edges.map((edge, idx) => {
-      const isConnected = connectedEdgeIds.has(`edge-${idx}`)
+    const dimmedEdges = edges.map((edge) => {
+      const isConnected = connectedEdgeIds.has(edge.id)
       const originalColor = edge.fill
       const dimmedColor = adjustOpacity(originalColor, dimOpacity)
       const glowColor = addGlow(originalColor)
@@ -274,6 +226,33 @@ export default function ReagraphView({
         minZoom={0.1}
         maxZoom={3}
       />
+
+      {isComputing && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            <span className="text-[10px] font-mono text-[var(--primary)] animate-pulse">COMPUTING GRAPH...</span>
+          </div>
+        </div>
+      )}
+
+      {isSampled && (
+        <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 bg-[var(--card)]/80 backdrop-blur-md border border-[var(--border)] border-l-4 border-l-amber-500 animate-in fade-in slide-in-from-bottom-2 duration-700">
+          <div className="flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="3">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span className="text-[10px] font-mono text-amber-500 font-bold tracking-wider uppercase">
+              Performance Mode: Graph Sampled
+            </span>
+          </div>
+          <p className="text-[8px] font-mono text-[var(--muted-foreground)] mt-0.5 max-w-[200px]">
+            Showing only high-risk nodes (Top {nodes.length}). View full details in the side panel.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
