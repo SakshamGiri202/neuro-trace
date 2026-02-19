@@ -1,0 +1,407 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #F4F4F8;
+  --foreground: #1A1A2E;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A2E;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A2E;
+  --primary: #0094A8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E4E4EC;
+  --secondary-foreground: #1A1A2E;
+  --muted: #E4E4EC;
+  --muted-foreground: #6B6B80;
+  --accent: #0094A8;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2645;
+  --destructive-foreground: #FFFFFF;
+  --border: #D4D4DC;
+  --input: #D4D4DC;
+  --ring: #0094A8;
+  --warning: #D9970A;
+  --chart-1: #0094A8;
+  --chart-2: #DC2645;
+  --chart-3: #D9970A;
+  --chart-4: #0094A8;
+  --chart-5: #DC2645;
+  --radius: 2px;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A1A2E;
+  --sidebar-primary: #0094A8;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E4E4EC;
+  --sidebar-accent-foreground: #1A1A2E;
+  --sidebar-border: #D4D4DC;
+  --sidebar-ring: #0094A8;
+}
+
+.dark {
+  --background: #0A0A0F;
+  --foreground: #E0E0E8;
+  --card: #12121A;
+  --card-foreground: #E0E0E8;
+  --popover: #12121A;
+  --popover-foreground: #E0E0E8;
+  --primary: #00F5FF;
+  --primary-foreground: #0A0A0F;
+  --secondary: #1E1E2E;
+  --secondary-foreground: #E0E0E8;
+  --muted: #1E1E2E;
+  --muted-foreground: #6B6B80;
+  --accent: #00F5FF;
+  --accent-foreground: #0A0A0F;
+  --destructive: #FF2D55;
+  --destructive-foreground: #FFFFFF;
+  --border: #1E1E2E;
+  --input: #1E1E2E;
+  --ring: #00F5FF;
+  --warning: #FFB800;
+  --chart-1: #00F5FF;
+  --chart-2: #FF2D55;
+  --chart-3: #FFB800;
+  --chart-4: #00F5FF;
+  --chart-5: #FF2D55;
+  --radius: 2px;
+  --sidebar: #12121A;
+  --sidebar-foreground: #E0E0E8;
+  --sidebar-primary: #00F5FF;
+  --sidebar-primary-foreground: #0A0A0F;
+  --sidebar-accent: #1E1E2E;
+  --sidebar-accent-foreground: #E0E0E8;
+  --sidebar-border: #1E1E2E;
+  --sidebar-ring: #00F5FF;
+}
+
+@theme inline {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Geist Mono', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-warning: var(--warning);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius));
+  --radius-md: calc(var(--radius));
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 2px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ===== RIFT FORENSICS ENGINE ANIMATIONS ===== */
+
+@keyframes glitch {
+  0%, 100% {
+    text-shadow: 2px 0 #00F5FF, -2px 0 #FF2D55;
+    transform: translate(0);
+  }
+  20% {
+    text-shadow: -2px 0 #00F5FF, 2px 0 #FF2D55;
+    transform: translate(-1px, 1px);
+  }
+  40% {
+    text-shadow: 2px 0 #FF2D55, -2px 0 #00F5FF;
+    transform: translate(1px, -1px);
+  }
+  60% {
+    text-shadow: -1px 0 #00F5FF, 1px 0 #FF2D55;
+    transform: translate(0);
+  }
+  80% {
+    text-shadow: 1px 0 #FF2D55, -1px 0 #FFB800;
+    transform: translate(-1px, 0);
+  }
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    box-shadow: 0 0 8px 2px rgba(255, 45, 85, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 6px rgba(255, 45, 85, 0.8);
+  }
+}
+
+@keyframes border-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes dash-march {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-border {
+  from {
+    height: 0;
+  }
+  to {
+    height: 100%;
+  }
+}
+
+.animate-glitch {
+  animation: glitch 3s infinite;
+}
+
+.animate-pulse-red {
+  animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+
+.animate-dash-march {
+  animation: dash-march 0.6s linear infinite;
+}
+
+/* Upload zone animated border */
+.upload-zone-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-zone-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #00F5FF;
+  pointer-events: none;
+  animation: pulse-red 2s ease-in-out infinite;
+  animation-name: upload-pulse;
+}
+
+@keyframes upload-pulse {
+  0%, 100% {
+    border-color: rgba(0, 245, 255, 0.3);
+  }
+  50% {
+    border-color: rgba(0, 245, 255, 0.9);
+  }
+}
+
+/* Table row hover effect */
+.fraud-row {
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.fraud-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 0;
+  background: #00F5FF;
+  transition: height 0.2s ease;
+}
+
+.fraud-row:hover::before {
+  height: 100%;
+}
+
+.fraud-row:hover {
+  background-color: rgba(0, 245, 255, 0.05);
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 12px 2px rgba(0, 245, 255, 0.3);
+}
+
+.glow-red {
+  box-shadow: 0 0 12px 2px rgba(255, 45, 85, 0.3);
+}
+
+.glow-amber {
+  box-shadow: 0 0 10px 2px rgba(255, 184, 0, 0.25);
+}
+
+/* Toast animation */
+@keyframes toast-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast-enter {
+  animation: toast-in 0.3s ease-out forwards;
+}
+
+.toast-exit {
+  animation: toast-out 0.3s ease-in forwards;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Cytoscape container */
+.cy-container canvas {
+  outline: none;
+}
+
+/* Range slider track styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: #1E1E2E;
+  outline: none;
+  border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: #00F5FF;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: #00F5FF;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #1E1E2E;
+  border-radius: 0;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: #1E1E2E;
+  border-radius: 0;
+}
+
+/* Graph control panel transitions */
+.graph-control-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+.graph-control-toggle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #00F5FF;
+  transition: width 0.2s ease;
+}
+
+.graph-control-toggle:hover::after {
+  width: 100%;
+}
