@@ -1,44 +1,36 @@
-"""
-Cycle detection service for RingBreaker.
-"""
-
-import networkx as nx
+import igraph as ig
 from typing import List, Set
 
-
-def find_cycles(G: nx.DiGraph, max_length: int = 5) -> List[List[str]]:
+def find_cycles(g: ig.Graph, max_length: int = 5) -> List[List[str]]:
     """
-    Detect cycles in the transaction graph using a depth-limited DFS.
-    This is much more efficient than nx.simple_cycles for short cycles.
+    Detect cycles in the transaction graph using a depth-limited DFS with iGraph.
     """
     cycles = []
-    nodes = list(G.nodes())
+    num_nodes = g.vcount()
+    node_names = g.vs["name"]
     
     # Target specific lengths: 3, 4, 5
-    for start_node in nodes:
-        # Simple DFS to find cycles starting from start_node
-        stack = [(start_node, [start_node])]
+    for i in range(num_nodes):
+        # stack stores (current_idx, path_as_indices)
+        stack = [(i, [i])]
         while stack:
-            current_node, path = stack.pop()
+            u, path = stack.pop()
             
             if len(path) > max_length:
                 continue
                 
-            for neighbor in G.successors(current_node):
-                if neighbor == start_node:
+            for v in g.successors(u):
+                if v == i:
                     if len(path) >= 3:
                         # Found a cycle!
-                        # Normalize to avoid duplicates (sort and use as key)
-                        # Actually simple_cycles handles this, we'll do a simple canonical form
-                        canonical = tuple(sorted(path))
-                        # We still need to check if we already found this cycle
-                        cycles.append(path)
-                elif neighbor not in path:
-                    stack.append((neighbor, path + [neighbor]))
+                        # Store as list of names
+                        cycles.append([node_names[idx] for idx in path])
+                elif v not in path:
+                    stack.append((v, path + [v]))
             
-            if len(cycles) > 5000: # Practical limit
+            if len(cycles) > 10000: # Slightly higher limit since iGraph is faster
                 break
-        if len(cycles) > 5000:
+        if len(cycles) > 10000:
             break
             
     # Remove duplicates (different start points of same cycle)
@@ -50,9 +42,7 @@ def find_cycles(G: nx.DiGraph, max_length: int = 5) -> List[List[str]]:
             seen.add(canonical)
             unique_cycles.append(cycle)
             
-    print(f"DEBUG: Found {len(unique_cycles)} unique cycles.")
     return unique_cycles
-
 
 def get_cycle_accounts(cycles: List[List[str]]) -> Set[str]:
     """Get all unique account IDs that appear in any detected cycle."""

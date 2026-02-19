@@ -144,6 +144,8 @@ export default function ReagraphView({
     return { displayNodes: dimmedNodes, displayEdges: dimmedEdges }
   }, [nodes, edges, activeNode, selectedNode, connectedNodeIds, connectedEdgeIds])
 
+  const isEfficiencyMode = nodes.length > 2000
+
   const handleNodeClick = (node: { id: string }) => {
     if (selectedNode === node.id) {
       setSelectedNode(null)
@@ -155,7 +157,7 @@ export default function ReagraphView({
   }
 
   const handleNodePointerOver = (node: { id: string }) => {
-    if (!selectedNode) {
+    if (!selectedNode && !isEfficiencyMode) {
       setHoveredNode(node.id)
     }
   }
@@ -183,6 +185,7 @@ export default function ReagraphView({
       fill: isDark ? '#1a1a1a' : '#ffffff',
       label: {
         ...baseTheme.node.label,
+        show: !isEfficiencyMode || nodes.length < 5000,
         color: isDark ? '#ffffff' : '#000000',
       },
     },
@@ -212,11 +215,11 @@ export default function ReagraphView({
         }}
         selections={selectedNode ? [selectedNode] : []}
         actives={selectedRingMembers.length > 0 ? selectedRingMembers : (activeNode && connectedNodeIds ? [...connectedNodeIds] : [])}
-        animated={true}
+        animated={!isEfficiencyMode}
         disabled={false}
         draggable={false}
         edgeArrowPosition="end"
-        edgeInterpolation="curved"
+        edgeInterpolation={isEfficiencyMode ? 'linear' : 'curved'}
         theme={theme}
         onNodeClick={handleNodeClick}
         onNodePointerOver={handleNodePointerOver}
@@ -236,7 +239,7 @@ export default function ReagraphView({
         </div>
       )}
 
-      {isSampled && (
+      {(isSampled || isEfficiencyMode) && (
         <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 bg-[var(--card)]/80 backdrop-blur-md border border-[var(--border)] border-l-4 border-l-amber-500 animate-in fade-in slide-in-from-bottom-2 duration-700">
           <div className="flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="3">
@@ -245,11 +248,13 @@ export default function ReagraphView({
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <span className="text-[10px] font-mono text-amber-500 font-bold tracking-wider uppercase">
-              Performance Mode: Graph Sampled
+              {isEfficiencyMode ? 'Efficiency Mode Active' : 'Performance Mode: Graph Sampled'}
             </span>
           </div>
           <p className="text-[8px] font-mono text-[var(--muted-foreground)] mt-0.5 max-w-[200px]">
-            Showing only high-risk nodes (Top {nodes.length}). View full details in the side panel.
+            {isEfficiencyMode
+              ? `Rendering ${nodes.length} nodes. Animations and curved edges disabled for stability.`
+              : `Showing only high-risk nodes (Top ${nodes.length}). View full details in the side panel.`}
           </p>
         </div>
       )}

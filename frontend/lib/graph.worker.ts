@@ -27,9 +27,9 @@ addEventListener('message', (event: MessageEvent<{ result: AnalysisResult }>) =>
         const { result } = event.data
         if (!result) return
 
-        // Constants
-        const MAX_NODES = 600
-        const MAX_EDGES = 1500
+        // Constants - Tuned for safe WebGL/Reagraph rendering performance
+        const MAX_NODES = 2500
+        const MAX_EDGES = 4000
 
         // Helper to get accounts since result.all_accounts might be a Map or a plain Object
         const getAccount = (id: string): AccountAnalysis | undefined => {
@@ -45,16 +45,21 @@ addEventListener('message', (event: MessageEvent<{ result: AnalysisResult }>) =>
         const allAccountIds = getAllAccountIds()
         const nodeList: any[] = []
 
-        // Identify priority nodes (high risk first)
+        // Identify priority nodes (suspicious nodes only)
         const priorityNodes = allAccountIds.filter(id => {
             const acc = getAccount(id)
-            return acc && acc.suspicion_score > 50
+            return acc && acc.suspicion_score > 0 // Any node with a score
+        }).sort((a, b) => {
+            const accA = getAccount(a)
+            const accB = getAccount(b)
+            return (accB?.suspicion_score || 0) - (accA?.suspicion_score || 0)
         })
 
         const isLarge = allAccountIds.length > MAX_NODES
         const visibleNodesSet = new Set<string>(priorityNodes.slice(0, MAX_NODES))
 
-        if (visibleNodesSet.size < MAX_NODES) {
+        // Only fill remaining slots with non-suspicious nodes if it's NOT a large dataset
+        if (!isLarge && visibleNodesSet.size < MAX_NODES) {
             const remainingSlots = MAX_NODES - visibleNodesSet.size
             const sortedByDegree = allAccountIds
                 .filter(id => !visibleNodesSet.has(id))

@@ -1,90 +1,60 @@
-"""
-Graph building utilities for RingBreaker.
-"""
-
 import pandas as pd
-import networkx as nx
-from typing import Dict, Any
+import igraph as ig
+from typing import Dict, Any, List
 
-
-def build_graph(df: pd.DataFrame) -> nx.DiGraph:
+def build_graph(df: pd.DataFrame) -> ig.Graph:
     """
-    Build a directed graph from transaction DataFrame.
-    Memory optimization: Avoid df.copy() and iterrows().
+    Build a directed graph from transaction DataFrame using iGraph.
+    iGraph is much faster and more memory-efficient than NetworkX.
     """
-    G = nx.DiGraph()
-    
-    # Ensure columns are strings for IDs
+    # Ensure IDs are strings
     df["sender_id"] = df["sender_id"].astype(str)
     df["receiver_id"] = df["receiver_id"].astype(str)
     
-    # Use itertuples() which is much faster than iterrows()
+    # Get unique nodes
+    unique_nodes = pd.unique(df[["sender_id", "receiver_id"]].values.ravel())
+    node_to_idx = {node: i for i, node in enumerate(unique_nodes)}
+    
+    # Prepare edges for igraph
+    # iGraph works best when creating the graph from an edge list with indices
+    edges = []
     for row in df.itertuples(index=False):
-        G.add_edge(
-            row.sender_id,
-            row.receiver_id,
-            amount=row.amount,
-            timestamp=row.timestamp,
-            transaction_id=row.transaction_id,
-        )
-
-    # Vectorized node stats calculation or using degree attributes directly
-    for node in G.nodes():
-        tx_count = G.in_degree(node) + G.out_degree(node)
-        # We don't necessarily NEED to pre-summarize everything here if it's not used 
-        # until the response phase. But let's keep it consistent but optimize.
+        edges.append((node_to_idx[row.sender_id], node_to_idx[row.receiver_id]))
         
-        # Optimized timestamp gathering
-        timestamps = [d["timestamp"] for _, _, d in G.out_edges(node, data=True)]
-        timestamps.extend([d["timestamp"] for _, _, d in G.in_edges(node, data=True)])
-        
-        amounts_sent = [d["amount"] for _, _, d in G.out_edges(node, data=True)]
-        amounts_received = [d["amount"] for _, _, d in G.in_edges(node, data=True)]
-        
-        G.nodes[node].update(
-            {
-                "total_sent": sum(amounts_sent),
-                "total_received": sum(amounts_received),
-                "tx_count": tx_count,
-                "first_seen": min(timestamps) if timestamps else None,
-                "last_seen": max(timestamps) if timestamps else None,
-            }
-        )
+    g = ig.Graph(len(unique_nodes), edges, directed=True)
+    g.vs["name"] = unique_nodes
+    g.es["amount"] = df["amount"].tolist()
+    g.es["timestamp"] = df["timestamp"].tolist()
+    g.es["transaction_id"] = df["transaction_id"].tolist()
+    
+    # We can pre-calculate some stats if needed, but iGraph handles these efficiently via g.vs/g.es
+    return g
 
-    return G
-
-
-def get_node_stats(G: nx.DiGraph, df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
+def get_node_stats(g: ig.Graph, df: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
     """
-    Calculate statistics for each node in the graph.
-    Memory optimization: Use vectorized group-by operations.
+    Calculate statistics for each node using iGraph and Pandas.
     """
     stats: Dict[str, Dict[str, Any]] = {}
-
-    # Calculate sent stats
+    
+    # Grouped stats for efficiency
     sent_stats = df.groupby("sender_id").agg({
         "amount": "sum",
         "timestamp": ["min", "max"]
     })
     sent_stats.columns = ["total_sent", "first_sent", "last_sent"]
 
-    # Calculate received stats
     received_stats = df.groupby("receiver_id").agg({
         "amount": "sum",
         "timestamp": ["min", "max"]
     })
     received_stats.columns = ["total_received", "first_received", "last_received"]
 
-    all_accounts = set(df["sender_id"].unique()).union(set(df["receiver_id"].unique()))
-
-    for account in all_accounts:
-        account_str = str(account)
+    for i, node_name in enumerate(g.vs["name"]):
+        s_stats = sent_stats.loc[node_name] if node_name in sent_stats.index else None
+        r_stats = received_stats.loc[node_name] if node_name in received_stats.index else None
         
-        s_stats = sent_stats.loc[account] if account in sent_stats.index else None
-        r_stats = received_stats.loc[account] if account in received_stats.index else None
-        
-        total_sent = s_stats["total_sent"] if s_stats is not None else 0
-        total_received = r_stats["total_received"] if r_stats is not None else 0
+        total_sent = float(s_stats["total_sent"]) if s_stats is not None else 0.0
+        total_received = float(r_stats["total_received"]) if r_stats is not None else 0.0
         
         times = []
         if s_stats is not None:
@@ -94,12 +64,12 @@ def get_node_stats(G: nx.DiGraph, df: pd.DataFrame) -> Dict[str, Dict[str, Any]]
             
         valid_times = [t for t in times if pd.notnull(t)]
 
-        stats[account_str] = {
-            "in_degree": G.in_degree(account_str) if account_str in G else 0,
-            "out_degree": G.out_degree(account_str) if account_str in G else 0,
-            "total_tx": (G.in_degree(account_str) + G.out_degree(account_str)) if account_str in G else 0,
-            "total_sent": float(total_sent),
-            "total_received": float(total_received),
+        stats[node_name] = {
+            "in_degree": g.indegree(i),
+            "out_degree": g.outdegree(i),
+            "total_tx": g.degree(i),
+            "total_sent": total_sent,
+            "total_received": total_received,
             "first_seen": min(valid_times) if valid_times else None,
             "last_seen": max(valid_times) if valid_times else None,
         }

@@ -415,7 +415,7 @@ function GeneralSummaryCompact({ summary, safeCount }: { summary: Summary; safeC
       </div>
 
       <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center">
-        {summary.processing_time_seconds.toFixed(2)}s
+        {summary.processing_time_seconds?.toFixed(2) ?? summary.total_processing_time_seconds?.toFixed(2) ?? '0.00'}s
       </div>
     </div>
   )
@@ -425,5 +425,7 @@ interface Summary {
   total_accounts_analyzed: number
   suspicious_accounts_flagged: number
   fraud_rings_detected: number
-  processing_time_seconds: number
+  processing_time_seconds?: number
+  total_processing_time_seconds?: number
+  detection_time_seconds?: number
 }
