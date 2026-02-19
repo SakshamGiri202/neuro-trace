@@ -9,11 +9,13 @@ import WalletModal from '@/components/WalletModal'
 import Navbar from '@/components/Navbar'
 import FraudRingTable from '@/components/FraudRingTable'
 import GraphView from '@/components/GraphView'
-import NodeDetailPanel from '@/components/NodeDetailPanel'
+import DetailsTab from '@/components/DetailsTab'
 import SummaryBar from '@/components/SummaryBar'
 import ToastContainer from '@/components/ToastContainer'
 
 const STORAGE_KEY = 'rift_analysis_result'
+
+type TabType = 'graph' | 'details'
 
 export default function AnalysisPage() {
   const router = useRouter()
@@ -28,6 +30,7 @@ export default function AnalysisPage() {
   const [isAnchoring, setIsAnchoring] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [isDark, setIsDark] = useState(true)
+  const [activeTab, setActiveTab] = useState<TabType>('graph')
 
   const addToast = useCallback(
     (message: string, type: Toast['type'] = 'info') => {
@@ -196,10 +199,6 @@ export default function AnalysisPage() {
     setIsLoading(false)
   }, [router])
 
-  const selectedAccount = selectedNode
-    ? analysisResult?.all_accounts.get(selectedNode) || null
-    : null
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-[var(--background)]">
@@ -235,16 +234,40 @@ export default function AnalysisPage() {
           selectedRing={selectedRing}
           onSelectRing={setSelectedRing}
         />
-        <GraphView
-          result={analysisResult}
-          selectedRing={selectedRing}
-          onNodeClick={setSelectedNode}
-          isDark={isDark}
-        />
-        <NodeDetailPanel
-          account={selectedAccount}
-          onClose={() => setSelectedNode(null)}
-        />
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex items-center gap-1 px-4 py-2 border-b border-[var(--border)] bg-[var(--card)]">
+            <TabButton
+              active={activeTab === 'graph'}
+              onClick={() => setActiveTab('graph')}
+            >
+              GRAPH
+            </TabButton>
+            <TabButton
+              active={activeTab === 'details'}
+              onClick={() => setActiveTab('details')}
+            >
+              DETAILS
+            </TabButton>
+          </div>
+          
+          <div className="flex-1 overflow-hidden">
+            {activeTab === 'graph' ? (
+              <GraphView
+                result={analysisResult}
+                selectedRing={selectedRing}
+                onNodeClick={setSelectedNode}
+                isDark={isDark}
+              />
+            ) : (
+              <DetailsTab
+                result={analysisResult}
+                selectedNode={selectedNode}
+                onNodeClick={setSelectedNode}
+              />
+            )}
+          </div>
+        </div>
       </div>
       <SummaryBar
         summary={analysisResult.summary}
@@ -281,4 +304,32 @@ function WalletModalWrapper({
   onConnect: (mnemonic: string) => void
 }) {
   return <WalletModal onClose={onClose} onConnect={onConnect} />
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative px-4 py-2 text-[10px] font-mono tracking-wider transition-all
+        ${active
+          ? 'text-[var(--primary)] bg-[var(--primary)]/10'
+          : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
+        }
+      `}
+    >
+      {children}
+      {active && (
+        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary)]" />
+      )}
+    </button>
+  )
 }
