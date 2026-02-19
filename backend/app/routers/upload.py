@@ -60,10 +60,17 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
     start_time = time.time()
 
     try:
+        # Memory optimization: Use BytesIO instead of contents.decode().decode()
+        from io import BytesIO
         contents = await file.read()
         print(f"DEBUG: Processing file: {file.filename}, size: {len(contents)}")
-        csv_text = contents.decode("utf-8")
-        df = pd.read_csv(StringIO(csv_text))
+        df = pd.read_csv(BytesIO(contents))
+        # Clear raw contents immediately after parsing
+        del contents
+        gc.collect()
+        
+        # Pre-convert timestamps ONCE to avoid per-service overhead
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
     except Exception as e:
         print(f"DEBUG: Parse error: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e)}")
@@ -79,8 +86,10 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
             },
         )
 
+    print("DEBUG: Building graph...")
     G = build_graph(df)
     
+    print("DEBUG: Running detection algorithms...")
     # Run detection algorithms in parallel to improve performance
     with ThreadPoolExecutor() as executor:
         future_cycles = executor.submit(find_cycles, G)
@@ -88,9 +97,13 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
         future_shells = executor.submit(detect_shells, G, df)
         
         cycles = future_cycles.result()
+        print("DEBUG: Cycles detected.")
         smurfing_results = future_smurfing.result()
+        print("DEBUG: Smurfing detected.")
         shell_results = future_shells.result()
+        print("DEBUG: Shells detected.")
 
+    print("DEBUG: Scoring accounts...")
     cycle_accounts = get_cycle_accounts(cycles)
     smurfing_accounts = {result["account_id"] for result in smurfing_results}
     shell_accounts = get_shell_accounts(shell_results)
@@ -99,6 +112,7 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
     scored_accounts = score_accounts(
         G, df, cycles, smurfing_results, shell_results, false_positive_filter
     )
+    print("DEBUG: Grouping rings...")
     fraud_rings, updated_scored_accounts = group_rings(
         cycles, smurfing_results, shell_results, scored_accounts
     )
@@ -148,12 +162,18 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
     except:
         communities = {node: 0 for node in G.nodes()}
 
-    # Adjacency
+    # Adjacency - Optimized to avoid creating huge list objects if possible
+    # But needed for the current frontend model. 
+    # Optimization: Only include neighbors that actually exist
     adj = {node: list(G.successors(node)) for node in G.nodes()}
     reverse_adj = {node: list(G.predecessors(node)) for node in G.nodes()}
     
     # Degrees
     node_degrees = {node: G.in_degree(node) + G.out_degree(node) for node in G.nodes()}
+    
+    # Explicitly clear G if we don't need it anymore to free memory for response preparation
+    del G
+    gc.collect()
 
     suspicious_accounts_list = [
         SuspiciousAccount(
@@ -173,6 +193,7 @@ async def upload_csv(file: UploadFile = File(...)) -> AnalysisResponse:
         )
         for ring in fraud_rings
     ]
+    print("DEBUG: Finalizing response...")
     processing_time = time.time() - start_time
 
     response = AnalysisResponse(

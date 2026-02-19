@@ -10,8 +10,8 @@ from datetime import timedelta
 
 def detect_smurfing(G: nx.DiGraph, df: pd.DataFrame) -> List[Dict[str, Any]]:
     """Detect smurfing patterns in transaction data."""
-    df = df.copy()
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    # Memory optimization: DO NOT copy the dataframe. 
+    # Timestamps should be pre-converted in the router.
     results: List[Dict[str, Any]] = []
 
     for node in G.nodes():
