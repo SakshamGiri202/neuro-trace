@@ -118,10 +118,28 @@ addEventListener('message', (event: MessageEvent<{ result: AnalysisResult }>) =>
             const sizeMax = Math.log(maxTx + 1) || 1
             const nodeSize = 15 + (sizeList / sizeMax) * 25
 
+            const isShell = account.detected_patterns.some(
+                p => p.includes('shell') || p.includes('chain')
+            )
+            const isCycle = account.detected_patterns.some(
+                p => p.includes('cycle') || p.includes('smurfing')
+            )
+
+            let fill: string
+            if (isShell) {
+                fill = '#A855F7' // Purple for shell chains
+            } else if (risk > 80 || isCycle) {
+                fill = '#EF4444' // Red for high-risk / cycle rings
+            } else if (risk > 30) {
+                fill = '#F59E0B' // Orange/yellow for medium risk
+            } else {
+                fill = '#10B981' // Green for clean
+            }
+
             nodeList.push({
                 id,
                 label: id.slice(0, 8),
-                fill: risk > 80 ? '#EF4444' : risk > 30 ? '#F59E0B' : '#10B981',
+                fill,
                 data: {
                     label: id,
                     suspicious: risk > 50,

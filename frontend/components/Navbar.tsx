@@ -1,25 +1,60 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import type { NavBarProps } from '@/lib/types'
+
+const LEGEND = [
+  { color: '#A855F7', label: 'Shell Chain' },
+  { color: '#EF4444', label: 'High Risk / Cycle' },
+  { color: '#F59E0B', label: 'Medium Risk' },
+  { color: '#10B981', label: 'Clean' },
+]
 
 export default function NavBar({
   walletAddress,
   onConnectWallet,
   isDark,
   onToggleTheme,
+  showLegend = false,
 }: NavBarProps) {
+  const router = useRouter()
+
   return (
-    <header className="flex items-center justify-between px-5 py-3 border-b border-[var(--border)] bg-[var(--card)]">
-      <div className="flex items-center gap-3">
-        <div className="w-2 h-2 bg-[var(--primary)]" />
-        <h1 className="text-sm font-mono font-bold tracking-[0.2em] text-[var(--foreground)] animate-glitch select-none">
-          RIFT FORENSICS ENGINE
+    <header className="relative flex items-center justify-between px-5 py-3 border-b border-[var(--border)] bg-[var(--card)]">
+      {/* Left: Logo */}
+      <div
+        className="flex items-center gap-3 cursor-pointer group z-10"
+        onClick={() => router.push('/')}
+        title="Go to home"
+      >
+        <div className="w-2 h-2 bg-[var(--primary)] group-hover:scale-125 transition-transform" />
+        <h1 className="text-sm font-mono font-bold tracking-[0.2em] text-[var(--foreground)] animate-glitch select-none group-hover:text-[var(--primary)] transition-colors">
+          NeuroTrace
         </h1>
-        <span className="text-[10px] font-mono text-[var(--muted-foreground)] border border-[var(--border)] px-1.5 py-0.5">
+        <span className="text-sm font-mono text-[var(--muted-foreground)] border border-[var(--border)] px-1.5 py-0.5">
           v2.1.0
         </span>
       </div>
-      <div className="flex items-center gap-3">
+
+      {/* Center: Legend (analysis page only) */}
+      {showLegend && (
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-8">
+          {LEGEND.map(({ color, label }) => (
+            <div key={label} className="flex flex-row items-center gap-2" style={{ direction: 'ltr' }}>
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: color }}
+              />
+              <span className="text-xs font-mono text-[var(--muted-foreground)] whitespace-nowrap">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Right: Theme Toggle */}
+      <div className="z-10">
         <button
           onClick={onToggleTheme}
           className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[var(--border)] bg-[var(--background)] text-xs font-mono text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:border-[var(--primary)] transition-all"
@@ -44,7 +79,6 @@ export default function NavBar({
           )}
           {isDark ? 'LIGHT' : 'DARK'}
         </button>
-
       </div>
     </header>
   )

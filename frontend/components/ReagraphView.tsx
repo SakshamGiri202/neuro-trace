@@ -191,6 +191,7 @@ export default function ReagraphView({
     },
     edge: {
       ...baseTheme.edge,
+      fill: isDark ? baseTheme.edge.fill : '#A0A0A0',
     },
     arrow: {
       ...baseTheme.arrow,
@@ -234,7 +235,7 @@ export default function ReagraphView({
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-            <span className="text-[10px] font-mono text-[var(--primary)] animate-pulse">COMPUTING GRAPH...</span>
+            <span className="text-sm font-mono text-[var(--primary)] animate-pulse">COMPUTING GRAPH...</span>
           </div>
         </div>
       )}
@@ -247,11 +248,11 @@ export default function ReagraphView({
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            <span className="text-[10px] font-mono text-amber-500 font-bold tracking-wider uppercase">
+            <span className="text-sm font-mono text-amber-500 font-bold tracking-wider uppercase">
               {isEfficiencyMode ? 'Efficiency Mode Active' : 'Performance Mode: Graph Sampled'}
             </span>
           </div>
-          <p className="text-[8px] font-mono text-[var(--muted-foreground)] mt-0.5 max-w-[200px]">
+          <p className="text-sm font-mono text-[var(--muted-foreground)] mt-0.5 max-w-[200px]">
             {isEfficiencyMode
               ? `Rendering ${nodes.length} nodes. Animations and curved edges disabled for stability.`
               : `Showing only high-risk nodes (Top ${nodes.length}). View full details in the side panel.`}

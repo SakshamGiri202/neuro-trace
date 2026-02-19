@@ -36,7 +36,7 @@ export default function SummaryBar({
             key={stat.label}
             className="flex-1 border border-[var(--border)] px-3 py-2"
           >
-            <span className="text-[9px] font-mono text-[var(--muted-foreground)] tracking-widest block">
+            <span className="text-xs font-mono text-[var(--muted-foreground)] tracking-widest block">
               {stat.label}
             </span>
             <span className="text-lg font-mono font-bold text-[var(--primary)]">
@@ -48,7 +48,7 @@ export default function SummaryBar({
         <div className="flex flex-col gap-1.5 shrink-0">
           <button
             onClick={onDownloadJSON}
-            className="px-4 py-1.5 border border-[var(--primary)]/40 text-[10px] font-mono text-[var(--primary)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)] transition-all tracking-wider"
+            className="px-4 py-1.5 border border-[var(--primary)]/40 text-sm font-mono text-[var(--primary)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)] transition-all tracking-wider"
           >
             DOWNLOAD JSON
           </button>

@@ -9,14 +9,14 @@ export default function GraphControlsPanel({
 }: GraphControlsPanelProps) {
   return (
     <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 bg-[var(--card)]/95 border border-[var(--border)] p-3 backdrop-blur-sm" style={{ width: 220 }}>
-      <span className="text-[9px] font-mono text-[var(--muted-foreground)] tracking-[0.15em] uppercase mb-1">
+      <span className="text-xs font-mono text-[var(--muted-foreground)] tracking-[0.15em] uppercase mb-1">
         Graph Controls
       </span>
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <label className="text-[10px] font-mono text-[var(--muted-foreground)]">MIN DEGREE</label>
-          <span className="text-[10px] font-mono text-[var(--primary)]">{controls.minDegree}</span>
+          <label className="text-sm font-mono text-[var(--muted-foreground)]">MIN DEGREE</label>
+          <span className="text-sm font-mono text-[var(--primary)]">{controls.minDegree}</span>
         </div>
         <input
           type="range"
@@ -30,8 +30,8 @@ export default function GraphControlsPanel({
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <label className="text-[10px] font-mono text-[var(--muted-foreground)]">GRAVITY</label>
-          <span className="text-[10px] font-mono text-[var(--primary)]">{controls.gravity.toFixed(2)}</span>
+          <label className="text-sm font-mono text-[var(--muted-foreground)]">GRAVITY</label>
+          <span className="text-sm font-mono text-[var(--primary)]">{controls.gravity.toFixed(2)}</span>
         </div>
         <input
           type="range"
@@ -45,8 +45,8 @@ export default function GraphControlsPanel({
 
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <label className="text-[10px] font-mono text-[var(--muted-foreground)]">SPACING</label>
-          <span className="text-[10px] font-mono text-[var(--primary)]">{controls.spacing}</span>
+          <label className="text-sm font-mono text-[var(--muted-foreground)]">SPACING</label>
+          <span className="text-sm font-mono text-[var(--primary)]">{controls.spacing}</span>
         </div>
         <input
           type="range"
@@ -61,7 +61,7 @@ export default function GraphControlsPanel({
 
       <button
         onClick={() => onChange({ ...controls, showClusters: !controls.showClusters })}
-        className={`flex items-center gap-2 py-1.5 px-2 border text-[10px] font-mono tracking-wider transition-all ${
+        className={`flex items-center gap-2 py-1.5 px-2 border text-sm font-mono tracking-wider transition-all ${
           controls.showClusters
             ? 'border-[var(--primary)]/60 text-[var(--primary)] bg-[var(--primary)]/10'
             : 'border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6B6B80]'
@@ -73,7 +73,7 @@ export default function GraphControlsPanel({
 
       <button
         onClick={() => onChange({ ...controls, bundleEdges: !controls.bundleEdges })}
-        className={`flex items-center gap-2 py-1.5 px-2 border text-[10px] font-mono tracking-wider transition-all ${
+        className={`flex items-center gap-2 py-1.5 px-2 border text-sm font-mono tracking-wider transition-all ${
           controls.bundleEdges
             ? 'border-[var(--primary)]/60 text-[var(--primary)] bg-[var(--primary)]/10'
             : 'border-[var(--border)] text-[var(--muted-foreground)] hover:border-[#6B6B80]'

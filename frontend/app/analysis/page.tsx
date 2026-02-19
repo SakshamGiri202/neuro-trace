@@ -236,6 +236,7 @@ export default function AnalysisPage() {
           onConnectWallet={() => setShowWalletModal(true)}
           isDark={isDark}
           onToggleTheme={() => setIsDark(d => !d)}
+          showLegend={true}
         />
       </div>
 
@@ -297,7 +298,7 @@ export default function AnalysisPage() {
 
       <button
         onClick={handleNewAnalysis}
-        className="fixed top-3 left-1/2 -translate-x-1/2 z-40 px-3 py-1 border border-[var(--border)] bg-[var(--card)] text-[10px] font-mono text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:border-[#FF2D55]/50 transition-all tracking-wider"
+        className="fixed top-3 left-1/2 -translate-x-1/2 z-40 px-3 py-1 border border-[var(--border)] bg-[var(--card)] text-sm font-mono text-[var(--muted-foreground)] hover:text-[var(--destructive)] hover:border-[#FF2D55]/50 transition-all tracking-wider"
       >
         NEW ANALYSIS
       </button>

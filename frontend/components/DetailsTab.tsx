@@ -77,7 +77,7 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
       <div className="flex border-b border-[var(--border)]">
         <button
           onClick={() => setActiveList('nodes')}
-          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${activeList === 'nodes'
+          className={`flex-1 px-3 py-2 text-sm font-mono tracking-wider transition-all ${activeList === 'nodes'
             ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
             : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
             }`}
@@ -86,7 +86,7 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
         </button>
         <button
           onClick={() => setActiveList('rings')}
-          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${activeList === 'rings'
+          className={`flex-1 px-3 py-2 text-sm font-mono tracking-wider transition-all ${activeList === 'rings'
             ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
             : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
             }`}
@@ -102,12 +102,12 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
             placeholder="Search account ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[var(--background)] border border-[var(--border)] px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-[var(--primary)] placeholder:text-[var(--muted-foreground)]/50"
+            className="w-full bg-[var(--background)] border border-[var(--border)] px-2 py-1 text-sm font-mono focus:outline-none focus:border-[var(--primary)] placeholder:text-[var(--muted-foreground)]/50"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px]"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-sm"
             >
               ✕
             </button>
@@ -128,11 +128,11 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
                   }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-[var(--foreground)] truncate max-w-[120px]">
+                  <span className="text-sm font-mono text-[var(--foreground)] truncate max-w-[120px]">
                     {account.account_id.slice(0, 8)}...
                   </span>
                   <span
-                    className={`text-[10px] font-mono font-bold ${account.suspicion_score > 80
+                    className={`text-sm font-mono font-bold ${account.suspicion_score > 80
                       ? 'text-[var(--destructive)]'
                       : account.suspicion_score >= 50
                         ? 'text-[#FFB800]'
@@ -146,7 +146,7 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
                   {account.detected_patterns.slice(0, 2).map((p, i) => (
                     <span
                       key={i}
-                      className="text-[8px] font-mono text-[var(--muted-foreground)] bg-[var(--border)] px-1"
+                      className="text-sm font-mono text-[var(--muted-foreground)] bg-[var(--border)] px-1"
                     >
                       {p}
                     </span>
@@ -156,51 +156,77 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
             ))}
             {filteredSuspicious.length > DISPLAY_LIMIT && (
               <div className="text-center py-2 border border-dashed border-[var(--border)]">
-                <p className="text-[9px] font-mono text-[var(--muted-foreground)] uppercase tracking-tighter">
+                <p className="text-xs font-mono text-[var(--muted-foreground)] uppercase tracking-tighter">
                   Showing {DISPLAY_LIMIT} of {filteredSuspicious.length} matches
                 </p>
-                <p className="text-[8px] font-mono text-[var(--muted-foreground)] italic">
+                <p className="text-sm font-mono text-[var(--muted-foreground)] italic">
                   Refine search to find specific nodes
                 </p>
               </div>
             )}
             {filteredSuspicious.length === 0 && (
-              <div className="text-center py-4 text-[10px] font-mono text-[var(--muted-foreground)] italic">
+              <div className="text-center py-4 text-sm font-mono text-[var(--muted-foreground)] italic">
                 No matching accounts found
               </div>
             )}
           </div>
         ) : (
-          <div className="p-2 space-y-1">
-            {result.fraud_rings.map((ring) => (
-              <button
-                key={ring.ring_id}
-                onClick={() => handleRingClick(ring)}
-                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${selectedItem?.type === 'ring' && selectedItem.data.ring_id === ring.ring_id
-                  ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
-                  : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
-                  }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono text-[var(--foreground)]">
-                    {ring.ring_id}
-                  </span>
-                  <span
-                    className={`text-[10px] font-mono font-bold ${ring.risk_score > 80
-                      ? 'text-[var(--destructive)]'
-                      : ring.risk_score >= 50
-                        ? 'text-[#FFB800]'
-                        : 'text-[var(--primary)]'
+          <div className="p-2 h-full overflow-y-auto w-full">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--border)]">
+                  <th className="py-2 px-1 text-xs font-semibold text-[var(--muted-foreground)] tracking-wider">RING ID</th>
+                  <th className="py-2 px-1 text-xs font-semibold text-[var(--muted-foreground)] tracking-wider">PATTERN</th>
+                  <th className="py-2 px-1 text-xs font-semibold text-[var(--muted-foreground)] tracking-wider text-center">MEMBERS</th>
+                  <th className="py-2 px-1 text-xs font-semibold text-[var(--muted-foreground)] tracking-wider text-center">RISK</th>
+                  <th className="py-2 px-1 text-xs font-semibold text-[var(--muted-foreground)] tracking-wider">ACCOUNT IDs</th>
+                </tr>
+              </thead >
+              <tbody>
+                {result.fraud_rings.map((ring) => (
+                  <tr
+                    key={ring.ring_id}
+                    onClick={() => handleRingClick(ring)}
+                    className={`border-b border-[var(--border)] cursor-pointer transition-all ${selectedItem?.type === 'ring' && selectedItem.data.ring_id === ring.ring_id
+                      ? 'bg-[var(--primary)]/20'
+                      : 'hover:bg-[var(--primary)]/10'
                       }`}
                   >
-                    {ring.risk_score}
-                  </span>
-                </div>
-                <span className="text-[9px] font-mono text-[var(--muted-foreground)] block mt-1">
-                  {ring.pattern_type.split(', ')[0]} • {ring.member_accounts.length} nodes
-                </span>
-              </button>
-            ))}
+                    <td className="py-2 px-1 text-sm font-mono text-[var(--primary)] align-top pt-3 font-semibold">
+                      {ring.ring_id.replace('RING_', 'R_')}
+                    </td>
+                    <td className="py-2 px-1 text-xs text-[var(--foreground)] align-top pt-3">
+                      <div className="flex flex-col gap-1">
+                        {ring.pattern_type.split(', ').map(p => (
+                          <span key={p} className="bg-[var(--border)] px-1.5 py-0.5 rounded text-sm inline-block w-max">
+                            {p.toUpperCase()}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="py-2 px-1 text-sm font-mono text-[var(--foreground)] text-center align-top pt-3">
+                      {ring.member_accounts.length}
+                    </td>
+                    <td className="py-2 px-1 text-sm font-mono text-center align-top pt-3">
+                      <span className={`font-bold ${ring.risk_score > 80
+                        ? 'text-[var(--destructive)]'
+                        : ring.risk_score >= 50
+                          ? 'text-[#FFB800]'
+                          : 'text-[var(--primary)]'
+                        }`}>
+                        {ring.risk_score}
+                      </span>
+                    </td>
+                    <td className="py-2 px-1 align-top pt-3">
+                      <div className="text-xs text-[var(--muted-foreground)] leading-relaxed break-all line-clamp-3">
+                        {ring.member_accounts.slice(0, 15).join(', ')}
+                        {ring.member_accounts.length > 15 ? ', ...' : ''}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -219,30 +245,31 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
         <div className="border-t border-[var(--border)] p-3 overflow-y-auto">
           <GeneralSummaryCompact summary={result.summary} safeCount={safeAccounts.length} />
         </div>
-      )}
+      )
+      }
 
       <div className="border-t border-[var(--border)] p-2">
-        <div className="text-[9px] font-mono text-[var(--muted-foreground)] mb-2">
+        <div className="text-xs font-mono text-[var(--muted-foreground)] mb-2">
           SAFE NODES ({safeAccounts.length})
         </div>
         <div className="max-h-20 overflow-y-auto space-y-1">
           {safeAccounts.slice(0, 50).map((account) => (
             <div
               key={account.account_id}
-              className="flex items-center justify-between px-2 py-1 text-[9px] font-mono text-[var(--muted-foreground)]"
+              className="flex items-center justify-between px-2 py-1 text-xs font-mono text-[var(--muted-foreground)]"
             >
               <span className="truncate max-w-[100px]">{account.account_id.slice(0, 8)}...</span>
               <span className="text-[var(--primary)]">{account.suspicion_score}</span>
             </div>
           ))}
           {safeAccounts.length > 50 && (
-            <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center py-1">
+            <div className="text-sm font-mono text-[var(--muted-foreground)] text-center py-1">
               +{safeAccounts.length - 50} more (use search to find specific nodes)
             </div>
           )}
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 
@@ -250,7 +277,7 @@ function NodeDetailsCompact({ account, onClear }: { account: AccountAnalysis; on
   return (
     <div className="p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
+        <span className="text-sm font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
           Node Details
         </span>
         <button
@@ -262,7 +289,7 @@ function NodeDetailsCompact({ account, onClear }: { account: AccountAnalysis; on
       </div>
 
       <div className="border border-[var(--border)] p-2">
-        <span className="text-[9px] text-[var(--muted-foreground)] font-mono block mb-1">
+        <span className="text-xs text-[var(--muted-foreground)] font-mono block mb-1">
           ACCOUNT
         </span>
         <span className="text-xs font-mono font-bold text-[var(--primary)] break-all">
@@ -275,19 +302,19 @@ function NodeDetailsCompact({ account, onClear }: { account: AccountAnalysis; on
       </div>
 
       <div className="border border-[var(--border)] p-2">
-        <span className="text-[9px] text-[var(--muted-foreground)] font-mono block mb-1">
+        <span className="text-xs text-[var(--muted-foreground)] font-mono block mb-1">
           PATTERNS
         </span>
         <div className="flex flex-wrap gap-1">
           {account.detected_patterns.length === 0 ? (
-            <span className="text-[9px] font-mono text-[var(--muted-foreground)]">NONE</span>
+            <span className="text-xs font-mono text-[var(--muted-foreground)]">NONE</span>
           ) : (
             account.detected_patterns.slice(0, 3).map((p, i) => {
               const isHighRisk = p.includes('cycle') || p === 'smurfing'
               return (
                 <span
                   key={`${p}-${i}`}
-                  className={`text-[8px] font-mono px-1.5 py-0.5 ${isHighRisk
+                  className={`text-sm font-mono px-1.5 py-0.5 ${isHighRisk
                     ? 'bg-[var(--destructive)]/20 text-[var(--destructive)] border border-[#FF2D55]/40'
                     : 'bg-transparent text-[var(--primary)] border border-[var(--primary)]/40'
                     }`}
@@ -302,12 +329,12 @@ function NodeDetailsCompact({ account, onClear }: { account: AccountAnalysis; on
 
       <div className="grid grid-cols-2 gap-2">
         <div className="border border-[var(--border)] p-2">
-          <span className="text-[8px] text-[var(--muted-foreground)] font-mono block mb-1">RING</span>
-          <span className="text-[10px] font-mono text-[#FFB800] font-bold">{account.ring_id || 'N/A'}</span>
+          <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-1">RING</span>
+          <span className="text-sm font-mono text-[#FFB800] font-bold">{account.ring_id || 'N/A'}</span>
         </div>
         <div className="border border-[var(--border)] p-2">
-          <span className="text-[8px] text-[var(--muted-foreground)] font-mono block mb-1">TXN</span>
-          <span className="text-[10px] font-mono text-[var(--foreground)] font-bold">{account.total_transactions}</span>
+          <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-1">TXN</span>
+          <span className="text-sm font-mono text-[var(--foreground)] font-bold">{account.total_transactions}</span>
         </div>
       </div>
     </div>
@@ -326,7 +353,7 @@ function RingDetailsCompact({
   return (
     <div className="p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
+        <span className="text-sm font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
           Ring Details
         </span>
         <button
@@ -362,14 +389,14 @@ function RingDetailsCompact({
 
         <div className="flex-1">
           <div className="border border-[var(--border)] p-2 mb-2">
-            <span className="text-[8px] text-[var(--muted-foreground)] font-mono block">RING ID</span>
+            <span className="text-sm text-[var(--muted-foreground)] font-mono block">RING ID</span>
             <span className="text-xs font-mono font-bold text-[#FFB800]">{ring.ring_id}</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {ring.pattern_type.split(', ').slice(0, 3).map((p, i) => (
               <span
                 key={i}
-                className="text-[8px] font-mono px-1.5 py-0.5 bg-transparent text-[var(--primary)] border border-[var(--primary)]/40"
+                className="text-sm font-mono px-1.5 py-0.5 bg-transparent text-[var(--primary)] border border-[var(--primary)]/40"
               >
                 {p.toUpperCase()}
               </span>
@@ -379,14 +406,14 @@ function RingDetailsCompact({
       </div>
 
       <div className="border border-[var(--border)] p-2">
-        <span className="text-[8px] text-[var(--muted-foreground)] font-mono block mb-1">
+        <span className="text-sm text-[var(--muted-foreground)] font-mono block mb-1">
           MEMBERS ({ring.member_accounts.length})
         </span>
         <div className="space-y-1 max-h-20 overflow-y-auto">
           {ring.member_accounts.slice(0, 5).map((accountId) => {
             const acc = accounts.get(accountId)
             return (
-              <div key={accountId} className="flex items-center justify-between text-[9px] font-mono">
+              <div key={accountId} className="flex items-center justify-between text-xs font-mono">
                 <span className="text-[var(--foreground)] truncate max-w-[120px]">{accountId.slice(0, 12)}...</span>
                 <span className={acc && acc.suspicion_score > 80 ? 'text-[var(--destructive)]' : acc && acc.suspicion_score >= 50 ? 'text-[#FFB800]' : 'text-[var(--primary)]'}>
                   {acc?.suspicion_score || 'N/A'}
@@ -395,7 +422,7 @@ function RingDetailsCompact({
             )
           })}
           {ring.member_accounts.length > 5 && (
-            <div className="text-[8px] font-mono text-[var(--muted-foreground)]">+{ring.member_accounts.length - 5} more</div>
+            <div className="text-sm font-mono text-[var(--muted-foreground)]">+{ring.member_accounts.length - 5} more</div>
           )}
         </div>
       </div>
@@ -407,10 +434,10 @@ function GeneralSummaryCompact({ summary, safeCount }: { summary: Summary; safeC
   return (
     <div className="flex flex-col gap-2">
       <div>
-        <span className="text-[9px] font-mono text-[var(--muted-foreground)] tracking-wider uppercase block mb-1">
+        <span className="text-xs font-mono text-[var(--muted-foreground)] tracking-wider uppercase block mb-1">
           Overview
         </span>
-        <p className="text-[9px] font-mono text-[var(--foreground)] leading-relaxed">
+        <p className="text-xs font-mono text-[var(--foreground)] leading-relaxed">
           <span className="text-[var(--primary)]">{summary.total_accounts_analyzed}</span> accounts,{' '}
           <span className="text-[var(--destructive)]">{summary.fraud_rings_detected}</span> rings,{' '}
           <span className="text-[#FFB800]">{summary.suspicious_accounts_flagged}</span> flagged,{' '}
@@ -421,23 +448,23 @@ function GeneralSummaryCompact({ summary, safeCount }: { summary: Summary; safeC
       <div className="grid grid-cols-4 gap-1">
         <div className="border border-[var(--border)] p-1.5 text-center">
           <div className="text-sm font-bold text-[var(--primary)]">{summary.total_accounts_analyzed}</div>
-          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">TOTAL</div>
+          <div className="text-sm font-mono text-[var(--muted-foreground)]">TOTAL</div>
         </div>
         <div className="border border-[var(--border)] p-1.5 text-center">
           <div className="text-sm font-bold text-[var(--destructive)]">{summary.fraud_rings_detected}</div>
-          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">RINGS</div>
+          <div className="text-sm font-mono text-[var(--muted-foreground)]">RINGS</div>
         </div>
         <div className="border border-[var(--border)] p-1.5 text-center">
           <div className="text-sm font-bold text-[#FFB800]">{summary.suspicious_accounts_flagged}</div>
-          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">FLAG</div>
+          <div className="text-sm font-mono text-[var(--muted-foreground)]">FLAG</div>
         </div>
         <div className="border border-[var(--border)] p-1.5 text-center">
           <div className="text-sm font-bold text-[var(--primary)]">{safeCount}</div>
-          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">SAFE</div>
+          <div className="text-sm font-mono text-[var(--muted-foreground)]">SAFE</div>
         </div>
       </div>
 
-      <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center">
+      <div className="text-sm font-mono text-[var(--muted-foreground)] text-center">
         {summary.processing_time_seconds?.toFixed(2) ?? summary.total_processing_time_seconds?.toFixed(2) ?? '0.00'}s
       </div>
     </div>

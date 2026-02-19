@@ -67,6 +67,7 @@ export interface NavBarProps {
   onConnectWallet: () => void
   isDark: boolean
   onToggleTheme: () => void
+  showLegend?: boolean
 }
 
 export interface UploadZoneProps {
