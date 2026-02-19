@@ -7,15 +7,12 @@ import { sha256 } from '@/lib/utils'
 import { deserializeAnalysisResult } from '@/lib/utils'
 import WalletModal from '@/components/WalletModal'
 import Navbar from '@/components/Navbar'
-import FraudRingTable from '@/components/FraudRingTable'
-import GraphView from '@/components/GraphView'
+import ReagraphView from '@/components/ReagraphView'
 import DetailsTab from '@/components/DetailsTab'
 import SummaryBar from '@/components/SummaryBar'
 import ToastContainer from '@/components/ToastContainer'
 
 const STORAGE_KEY = 'rift_analysis_result'
-
-type TabType = 'graph' | 'details'
 
 export default function AnalysisPage() {
   const router = useRouter()
@@ -30,7 +27,7 @@ export default function AnalysisPage() {
   const [isAnchoring, setIsAnchoring] = useState(false)
   const [toasts, setToasts] = useState<Toast[]>([])
   const [isDark, setIsDark] = useState(true)
-  const [activeTab, setActiveTab] = useState<TabType>('graph')
+  const [showDetailsPanel, setShowDetailsPanel] = useState(true)
 
   const addToast = useCallback(
     (message: string, type: Toast['type'] = 'info') => {
@@ -221,50 +218,63 @@ export default function AnalysisPage() {
 
   return (
     <div className="flex flex-col h-screen bg-[var(--background)] text-[var(--foreground)] overflow-hidden">
-      <Navbar
-        walletAddress={walletAddress}
-        onConnectWallet={() => setShowWalletModal(true)}
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(d => !d)}
-      />
+      <div className="relative z-50">
+        <Navbar
+          walletAddress={walletAddress}
+          onConnectWallet={() => setShowWalletModal(true)}
+          isDark={isDark}
+          onToggleTheme={() => setIsDark(d => !d)}
+        />
+      </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center gap-1 px-4 py-2 border-b border-[var(--border)] bg-[var(--card)]">
-            <TabButton
-              active={activeTab === 'graph'}
-              onClick={() => setActiveTab('graph')}
-            >
-              GRAPH
-            </TabButton>
-            <TabButton
-              active={activeTab === 'details'}
-              onClick={() => setActiveTab('details')}
-            >
-              DETAILS
-            </TabButton>
+      <div className="flex flex-1 overflow-hidden min-h-0">
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          <div className="flex-1 h-full min-h-0">
+            <ReagraphView
+              result={analysisResult}
+              selectedRing={selectedRing}
+              onNodeClick={setSelectedNode}
+              isDark={isDark}
+            />
           </div>
-          
-          {activeTab === 'graph' ? (
-            <div className="h-[1400px]">
-              <GraphView
-                result={analysisResult}
-                selectedRing={selectedRing}
-                onNodeClick={setSelectedNode}
-                isDark={isDark}
-              />
-            </div>
-          ) : (
-            <div className="flex-1 overflow-hidden">
+
+          <button
+            onClick={() => setShowDetailsPanel(!showDetailsPanel)}
+            className={`
+              flex items-center justify-center w-8 h-full
+              bg-[var(--card)] border-y border-[var(--border)]
+              text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:bg-[var(--card)]/90
+              transition-all duration-200 cursor-pointer
+              ${showDetailsPanel ? 'border-l' : 'border-r'}
+            `}
+            title={showDetailsPanel ? 'Hide details panel' : 'Show details panel'}
+          >
+            <span className={`text-sm font-bold transition-transform duration-200 ${showDetailsPanel ? '' : 'rotate-180'}`}>
+              ❮
+            </span>
+          </button>
+
+          <div
+            className={`
+              h-full overflow-hidden transition-all duration-300 ease-in-out
+              ${showDetailsPanel ? 'w-96 opacity-100' : 'w-0 opacity-0'}
+            `}
+          >
+            <div className={`
+              h-full w-96
+              bg-[var(--card)]/80 backdrop-blur-xl
+              border-l border-[var(--border)]
+            `}>
               <DetailsTab
                 result={analysisResult}
                 selectedNode={selectedNode}
                 onNodeClick={setSelectedNode}
               />
             </div>
-          )}
+          </div>
         </div>
       </div>
+
       <SummaryBar
         summary={analysisResult.summary}
         onDownloadJSON={handleDownloadJSON}
@@ -300,32 +310,4 @@ function WalletModalWrapper({
   onConnect: (mnemonic: string) => void
 }) {
   return <WalletModal onClose={onClose} onConnect={onConnect} />
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        relative px-4 py-2 text-[10px] font-mono tracking-wider transition-all
-        ${active
-          ? 'text-[var(--primary)] bg-[var(--primary)]/10'
-          : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
-        }
-      `}
-    >
-      {children}
-      {active && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary)]" />
-      )}
-    </button>
-  )
 }

@@ -29,7 +29,7 @@ export default function SummaryBar({
   ]
 
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--card)] px-4 py-3">
+    <footer className="relative z-10 border-t border-[var(--border)] bg-[var(--card)] px-4 py-3">
       <div className="flex items-center gap-4">
         {stats.map((stat) => (
           <div
@@ -55,13 +55,12 @@ export default function SummaryBar({
           <button
             onClick={onAnchor}
             disabled={isAnchoring}
-            className={`px-4 py-1.5 border text-[10px] font-mono tracking-wider transition-all ${
-              txId
+            className={`px-4 py-1.5 border text-[10px] font-mono tracking-wider transition-all ${txId
                 ? 'border-green-500/40 text-green-500 bg-green-500/10'
                 : isAnchoring
                   ? 'border-[#FFB800]/40 text-[#FFB800] opacity-60 cursor-wait'
                   : 'border-[#FFB800]/40 text-[#FFB800] hover:bg-[#FFB800]/10 hover:border-[#FFB800]'
-            }`}
+              }`}
           >
             {txId
               ? 'ANCHORED'

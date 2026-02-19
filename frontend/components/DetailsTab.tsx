@@ -43,163 +43,153 @@ export default function DetailsTab({ result, selectedNode, onNodeClick }: Detail
   )
 
   return (
-    <div className="grid grid-cols-5 grid-rows-5 gap-4 h-full">
-      <div className="col-span-2 row-span-5 bg-[var(--card)] border border-[var(--border)] overflow-hidden flex flex-col">
-        <div className="flex border-b border-[var(--border)]">
-          <button
-            onClick={() => setActiveList('nodes')}
-            className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${
-              activeList === 'nodes'
-                ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-            }`}
-          >
-            NODES ({result.suspicious_accounts.length})
-          </button>
-          <button
-            onClick={() => setActiveList('rings')}
-            className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${
-              activeList === 'rings'
-                ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-            }`}
-          >
-            RINGS ({result.fraud_rings.length})
-          </button>
-        </div>
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex border-b border-[var(--border)]">
+        <button
+          onClick={() => setActiveList('nodes')}
+          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${
+            activeList === 'nodes'
+              ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
+              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
+          }`}
+        >
+          NODES ({result.suspicious_accounts.length})
+        </button>
+        <button
+          onClick={() => setActiveList('rings')}
+          className={`flex-1 px-3 py-2 text-[10px] font-mono tracking-wider transition-all ${
+            activeList === 'rings'
+              ? 'bg-[var(--primary)]/20 text-[var(--primary)] border-b-2 border-[var(--primary)]'
+              : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
+          }`}
+        >
+          RINGS ({result.fraud_rings.length})
+        </button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {activeList === 'nodes' ? (
-            <div className="p-2 space-y-1">
-              {result.suspicious_accounts.map((account) => (
-                <button
-                  key={account.account_id}
-                  onClick={() => handleNodeClick(account)}
-                  className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${
-                    selectedItem?.type === 'node' && selectedItem.data.account_id === account.account_id
-                      ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
-                      : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono text-[var(--foreground)] truncate max-w-[120px]">
-                      {account.account_id.slice(0, 8)}...
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono font-bold ${
-                        account.suspicion_score > 80
-                          ? 'text-[var(--destructive)]'
-                          : account.suspicion_score >= 50
-                            ? 'text-[#FFB800]'
-                            : 'text-[var(--primary)]'
-                      }`}
-                    >
-                      {account.suspicion_score}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {account.detected_patterns.slice(0, 2).map((p, i) => (
-                      <span
-                        key={i}
-                        className="text-[8px] font-mono text-[var(--muted-foreground)] bg-[var(--border)] px-1"
-                      >
-                        {p}
-                      </span>
-                    ))}
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="p-2 space-y-1">
-              {result.fraud_rings.map((ring) => (
-                <button
-                  key={ring.ring_id}
-                  onClick={() => handleRingClick(ring)}
-                  className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${
-                    selectedItem?.type === 'ring' && selectedItem.data.ring_id === ring.ring_id
-                      ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
-                      : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono text-[var(--foreground)]">
-                      {ring.ring_id}
-                    </span>
-                    <span
-                      className={`text-[10px] font-mono font-bold ${
-                        ring.risk_score > 80
-                          ? 'text-[var(--destructive)]'
-                          : ring.risk_score >= 50
-                            ? 'text-[#FFB800]'
-                            : 'text-[var(--primary)]'
-                      }`}
-                    >
-                      {ring.risk_score}
-                    </span>
-                  </div>
-                  <span className="text-[9px] font-mono text-[var(--muted-foreground)] block mt-1">
-                    {ring.pattern_type.split(', ')[0]} • {ring.member_accounts.length} nodes
+      <div className="flex-1 overflow-y-auto">
+        {activeList === 'nodes' ? (
+          <div className="p-2 space-y-1">
+            {result.suspicious_accounts.map((account) => (
+              <button
+                key={account.account_id}
+                onClick={() => handleNodeClick(account)}
+                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${
+                  selectedItem?.type === 'node' && selectedItem.data.account_id === account.account_id
+                    ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
+                    : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[var(--foreground)] truncate max-w-[120px]">
+                    {account.account_id.slice(0, 8)}...
                   </span>
-                </button>
-              ))}
+                  <span
+                    className={`text-[10px] font-mono font-bold ${
+                      account.suspicion_score > 80
+                        ? 'text-[var(--destructive)]'
+                        : account.suspicion_score >= 50
+                          ? 'text-[#FFB800]'
+                          : 'text-[var(--primary)]'
+                    }`}
+                  >
+                    {account.suspicion_score}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {account.detected_patterns.slice(0, 2).map((p, i) => (
+                    <span
+                      key={i}
+                      className="text-[8px] font-mono text-[var(--muted-foreground)] bg-[var(--border)] px-1"
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="p-2 space-y-1">
+            {result.fraud_rings.map((ring) => (
+              <button
+                key={ring.ring_id}
+                onClick={() => handleRingClick(ring)}
+                className={`w-full text-left px-3 py-2 border border-[var(--border)] transition-all ${
+                  selectedItem?.type === 'ring' && selectedItem.data.ring_id === ring.ring_id
+                    ? 'bg-[var(--primary)]/20 border-[var(--primary)]'
+                    : 'hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-[var(--foreground)]">
+                    {ring.ring_id}
+                  </span>
+                  <span
+                    className={`text-[10px] font-mono font-bold ${
+                      ring.risk_score > 80
+                        ? 'text-[var(--destructive)]'
+                        : ring.risk_score >= 50
+                          ? 'text-[#FFB800]'
+                          : 'text-[var(--primary)]'
+                    }`}
+                  >
+                    {ring.risk_score}
+                  </span>
+                </div>
+                <span className="text-[9px] font-mono text-[var(--muted-foreground)] block mt-1">
+                  {ring.pattern_type.split(', ')[0]} • {ring.member_accounts.length} nodes
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selectedItem && (
+        <div className="border-t border-[var(--border)] overflow-y-auto max-h-[45%]">
+          {selectedItem.type === 'node' ? (
+            <NodeDetailsCompact account={selectedItem.data} onClear={() => setSelectedItem(null)} />
+          ) : (
+            <RingDetailsCompact ring={selectedItem.data} accounts={result.all_accounts} onClear={() => setSelectedItem(null)} />
+          )}
+        </div>
+      )}
+
+      {!selectedItem && (
+        <div className="border-t border-[var(--border)] p-3 overflow-y-auto">
+          <GeneralSummaryCompact summary={result.summary} safeCount={safeAccounts.length} />
+        </div>
+      )}
+
+      <div className="border-t border-[var(--border)] p-2">
+        <div className="text-[9px] font-mono text-[var(--muted-foreground)] mb-2">
+          SAFE NODES ({safeAccounts.length})
+        </div>
+        <div className="max-h-20 overflow-y-auto space-y-1">
+          {safeAccounts.slice(0, 8).map((account) => (
+            <div
+              key={account.account_id}
+              className="flex items-center justify-between px-2 py-1 text-[9px] font-mono text-[var(--muted-foreground)]"
+            >
+              <span className="truncate max-w-[100px]">{account.account_id.slice(0, 8)}...</span>
+              <span className="text-[var(--primary)]">{account.suspicion_score}</span>
+            </div>
+          ))}
+          {safeAccounts.length > 8 && (
+            <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center py-1">
+              +{safeAccounts.length - 8} more
             </div>
           )}
         </div>
-
-        <div className="p-2 border-t border-[var(--border)]">
-          <div className="text-[9px] font-mono text-[var(--muted-foreground)] mb-2">
-            SAFE NODES ({safeAccounts.length})
-          </div>
-          <div className="max-h-24 overflow-y-auto space-y-1">
-            {safeAccounts.slice(0, 10).map((account) => (
-              <div
-                key={account.account_id}
-                className="flex items-center justify-between px-2 py-1 text-[9px] font-mono text-[var(--muted-foreground)]"
-              >
-                <span className="truncate max-w-[100px]">{account.account_id.slice(0, 8)}...</span>
-                <span className="text-[var(--primary)]">{account.suspicion_score}</span>
-              </div>
-            ))}
-            {safeAccounts.length > 10 && (
-              <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center py-1">
-                +{safeAccounts.length - 10} more
-              </div>
-            )}
-          </div>
-        </div>
       </div>
-
-      {selectedItem ? (
-        <>
-          <div className="col-span-3 row-span-4 col-start-3 row-start-1 bg-[var(--card)] border border-[var(--border)] overflow-y-auto">
-            {selectedItem.type === 'node' ? (
-              <NodeDetails account={selectedItem.data} onClear={() => setSelectedItem(null)} />
-            ) : (
-              <RingDetails ring={selectedItem.data} accounts={result.all_accounts} onClear={() => setSelectedItem(null)} />
-            )}
-          </div>
-
-          <div className="col-span-3 col-start-3 row-start-5 bg-[var(--card)] border border-[var(--border)] p-4 overflow-y-auto">
-            {selectedItem.type === 'node' ? (
-              <NodeSummary account={selectedItem.data} />
-            ) : (
-              <RingSummary ring={selectedItem.data} accounts={result.all_accounts} />
-            )}
-          </div>
-        </>
-      ) : (
-        <div className="col-span-3 col-start-3 row-span-5 row-start-1 bg-[var(--card)] border border-[var(--border)] p-4 overflow-y-auto">
-          <GeneralSummary summary={result.summary} safeCount={safeAccounts.length} />
-        </div>
-      )}
     </div>
   )
 }
 
-function NodeDetails({ account, onClear }: { account: AccountAnalysis; onClear: () => void }) {
+function NodeDetailsCompact({ account, onClear }: { account: AccountAnalysis; onClear: () => void }) {
   return (
-    <div className="p-4 flex flex-col gap-4">
+    <div className="p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
           Node Details
@@ -208,39 +198,37 @@ function NodeDetails({ account, onClear }: { account: AccountAnalysis; onClear: 
           onClick={onClear}
           className="text-[var(--muted-foreground)] hover:text-[var(--destructive)] text-xs font-mono transition-colors"
         >
-          [X]
+          ✕
         </button>
       </div>
 
-      <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
-          ACCOUNT ID
+      <div className="border border-[var(--border)] p-2">
+        <span className="text-[9px] text-[var(--muted-foreground)] font-mono block mb-1">
+          ACCOUNT
         </span>
-        <span className="text-sm font-mono font-bold text-[var(--primary)] break-all">
-          {account.account_id}
+        <span className="text-xs font-mono font-bold text-[var(--primary)] break-all">
+          {account.account_id.slice(0, 16)}...
         </span>
       </div>
 
-      <div className="flex justify-center py-2">
+      <div className="flex justify-center">
         <SuspicionGauge score={account.suspicion_score} />
       </div>
 
-      <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-2">
-          DETECTED PATTERNS
+      <div className="border border-[var(--border)] p-2">
+        <span className="text-[9px] text-[var(--muted-foreground)] font-mono block mb-1">
+          PATTERNS
         </span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {account.detected_patterns.length === 0 ? (
-            <span className="text-[10px] font-mono text-[var(--muted-foreground)]">
-              NONE
-            </span>
+            <span className="text-[9px] font-mono text-[var(--muted-foreground)]">NONE</span>
           ) : (
-            account.detected_patterns.map((p, i) => {
+            account.detected_patterns.slice(0, 3).map((p, i) => {
               const isHighRisk = p.includes('cycle') || p === 'smurfing'
               return (
                 <span
                   key={`${p}-${i}`}
-                  className={`text-[10px] font-mono px-2 py-0.5 ${
+                  className={`text-[8px] font-mono px-1.5 py-0.5 ${
                     isHighRisk
                       ? 'bg-[var(--destructive)]/20 text-[var(--destructive)] border border-[#FF2D55]/40'
                       : 'bg-transparent text-[var(--primary)] border border-[var(--primary)]/40'
@@ -255,28 +243,20 @@ function NodeDetails({ account, onClear }: { account: AccountAnalysis; onClear: 
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="border border-[var(--border)] p-3">
-          <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
-            RING ID
-          </span>
-          <span className="text-xs font-mono text-[#FFB800] font-bold">
-            {account.ring_id || 'N/A'}
-          </span>
+        <div className="border border-[var(--border)] p-2">
+          <span className="text-[8px] text-[var(--muted-foreground)] font-mono block mb-1">RING</span>
+          <span className="text-[10px] font-mono text-[#FFB800] font-bold">{account.ring_id || 'N/A'}</span>
         </div>
-        <div className="border border-[var(--border)] p-3">
-          <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
-            TOTAL TXN
-          </span>
-          <span className="text-xs font-mono text-[var(--foreground)] font-bold">
-            {account.total_transactions}
-          </span>
+        <div className="border border-[var(--border)] p-2">
+          <span className="text-[8px] text-[var(--muted-foreground)] font-mono block mb-1">TXN</span>
+          <span className="text-[10px] font-mono text-[var(--foreground)] font-bold">{account.total_transactions}</span>
         </div>
       </div>
     </div>
   )
 }
 
-function RingDetails({
+function RingDetailsCompact({
   ring,
   accounts,
   onClear,
@@ -286,7 +266,7 @@ function RingDetails({
   onClear: () => void
 }) {
   return (
-    <div className="p-4 flex flex-col gap-4">
+    <div className="p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
           Ring Details
@@ -295,21 +275,12 @@ function RingDetails({
           onClick={onClear}
           className="text-[var(--muted-foreground)] hover:text-[var(--destructive)] text-xs font-mono transition-colors"
         >
-          [X]
+          ✕
         </button>
       </div>
 
-      <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-1">
-          RING ID
-        </span>
-        <span className="text-sm font-mono font-bold text-[#FFB800]">
-          {ring.ring_id}
-        </span>
-      </div>
-
-      <div className="flex justify-center py-2">
-        <svg width="96" height="96" viewBox="0 0 96 96">
+      <div className="flex items-center gap-3">
+        <svg width="64" height="64" viewBox="0 0 96 96">
           <circle cx="48" cy="48" r="36" fill="none" stroke="#1E1E2E" strokeWidth="5" />
           <circle
             cx="48"
@@ -323,142 +294,93 @@ function RingDetails({
             transform="rotate(-90 48 48)"
             style={{ transition: 'stroke-dasharray 0.8s ease' }}
           />
-          <text x="48" y="44" textAnchor="middle" dominantBaseline="central" fill={ring.risk_score > 80 ? '#FF2D55' : ring.risk_score >= 50 ? '#FFB800' : '#00F5FF'} fontSize="22" fontFamily="var(--font-mono), monospace" fontWeight="700">
+          <text x="48" y="44" textAnchor="middle" dominantBaseline="central" fill={ring.risk_score > 80 ? '#FF2D55' : ring.risk_score >= 50 ? '#FFB800' : '#00F5FF'} fontSize="20" fontFamily="var(--font-mono), monospace" fontWeight="700">
             {ring.risk_score}
           </text>
-          <text x="48" y="62" textAnchor="middle" fill="#6B6B80" fontSize="8" fontFamily="var(--font-mono), monospace" style={{ textTransform: 'uppercase' }} letterSpacing="1">
+          <text x="48" y="60" textAnchor="middle" fill="#6B6B80" fontSize="7" fontFamily="var(--font-mono), monospace" style={{ textTransform: 'uppercase' }} letterSpacing="1">
             RISK
           </text>
         </svg>
-      </div>
 
-      <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-2">
-          PATTERN TYPES
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {ring.pattern_type.split(', ').map((p, i) => (
-            <span
-              key={i}
-              className="text-[10px] font-mono px-2 py-0.5 bg-transparent text-[var(--primary)] border border-[var(--primary)]/40"
-            >
-              {p.toUpperCase()}
-            </span>
-          ))}
+        <div className="flex-1">
+          <div className="border border-[var(--border)] p-2 mb-2">
+            <span className="text-[8px] text-[var(--muted-foreground)] font-mono block">RING ID</span>
+            <span className="text-xs font-mono font-bold text-[#FFB800]">{ring.ring_id}</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {ring.pattern_type.split(', ').slice(0, 3).map((p, i) => (
+              <span
+                key={i}
+                className="text-[8px] font-mono px-1.5 py-0.5 bg-transparent text-[var(--primary)] border border-[var(--primary)]/40"
+              >
+                {p.toUpperCase()}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="border border-[var(--border)] p-3">
-        <span className="text-[10px] text-[var(--muted-foreground)] font-mono block mb-2">
-          MEMBER ACCOUNTS ({ring.member_accounts.length})
+      <div className="border border-[var(--border)] p-2">
+        <span className="text-[8px] text-[var(--muted-foreground)] font-mono block mb-1">
+          MEMBERS ({ring.member_accounts.length})
         </span>
-        <div className="space-y-1 max-h-32 overflow-y-auto">
-          {ring.member_accounts.map((accountId) => {
+        <div className="space-y-1 max-h-20 overflow-y-auto">
+          {ring.member_accounts.slice(0, 5).map((accountId) => {
             const acc = accounts.get(accountId)
             return (
-              <div key={accountId} className="flex items-center justify-between text-[10px] font-mono">
-                <span className="text-[var(--foreground)] truncate max-w-[150px]">
-                  {accountId}
-                </span>
-                <span
-                  className={`${
-                    acc && acc.suspicion_score > 80
-                      ? 'text-[var(--destructive)]'
-                      : acc && acc.suspicion_score >= 50
-                        ? 'text-[#FFB800]'
-                        : 'text-[var(--primary)]'
-                  }`}
-                >
+              <div key={accountId} className="flex items-center justify-between text-[9px] font-mono">
+                <span className="text-[var(--foreground)] truncate max-w-[120px]">{accountId.slice(0, 12)}...</span>
+                <span className={acc && acc.suspicion_score > 80 ? 'text-[var(--destructive)]' : acc && acc.suspicion_score >= 50 ? 'text-[#FFB800]' : 'text-[var(--primary)]'}>
                   {acc?.suspicion_score || 'N/A'}
                 </span>
               </div>
             )
           })}
+          {ring.member_accounts.length > 5 && (
+            <div className="text-[8px] font-mono text-[var(--muted-foreground)]">+{ring.member_accounts.length - 5} more</div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function NodeSummary({ account }: { account: AccountAnalysis }) {
+function GeneralSummaryCompact({ summary, safeCount }: { summary: Summary; safeCount: number }) {
   return (
-    <div className="text-[10px] font-mono">
-      <span className="text-[var(--muted-foreground)] tracking-wider uppercase block mb-2">
-        Summary
-      </span>
-      <p className="text-[var(--foreground)] leading-relaxed">
-        Account <span className="text-[var(--primary)]">{account.account_id.slice(0, 12)}...</span> has been flagged with a suspicion score of{' '}
-        <span className={account.suspicion_score > 80 ? 'text-[var(--destructive)]' : account.suspicion_score >= 50 ? 'text-[#FFB800]' : 'text-[var(--primary)]'}>
-          {account.suspicion_score}
-        </span>
-        {account.ring_id && (
-          <>
-            {' '}and is associated with fraud ring <span className="text-[#FFB800]">{account.ring_id}</span>
-          </>
-        )}
-        . The account shows {account.detected_patterns.length} suspicious pattern{account.detected_patterns.length !== 1 ? 's' : ''} including{' '}
-        {account.detected_patterns.slice(0, 3).join(', ')}.
-      </p>
-    </div>
-  )
-}
-
-function RingSummary({ ring, accounts }: { ring: FraudRing; accounts: Map<string, AccountAnalysis> }) {
-  const avgScore = ring.member_accounts.reduce((sum, id) => sum + (accounts.get(id)?.suspicion_score || 0), 0) / ring.member_accounts.length
-
-  return (
-    <div className="text-[10px] font-mono">
-      <span className="text-[var(--muted-foreground)] tracking-wider uppercase block mb-2">
-        Summary
-      </span>
-      <p className="text-[var(--foreground)] leading-relaxed">
-        Fraud ring <span className="text-[#FFB800]">{ring.ring_id}</span> contains{' '}
-        <span className="text-[var(--primary)]">{ring.member_accounts.length}</span> accounts with a combined risk score of{' '}
-        <span className={ring.risk_score > 80 ? 'text-[var(--destructive)]' : ring.risk_score >= 50 ? 'text-[#FFB800]' : 'text-[var(--primary)]'}>
-          {ring.risk_score}
-        </span>
-        . Average suspicion score across members: {avgScore.toFixed(1)}. Pattern types detected: {ring.pattern_type}.
-      </p>
-    </div>
-  )
-}
-
-function GeneralSummary({ summary, safeCount }: { summary: Summary; safeCount: number }) {
-  return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <div>
-        <span className="text-[10px] font-mono text-[var(--muted-foreground)] tracking-wider uppercase block mb-2">
-          Analysis Overview
+        <span className="text-[9px] font-mono text-[var(--muted-foreground)] tracking-wider uppercase block mb-1">
+          Overview
         </span>
-        <p className="text-[10px] font-mono text-[var(--foreground)] leading-relaxed">
-          Analyzed <span className="text-[var(--primary)]">{summary.total_accounts_analyzed}</span> accounts and detected{' '}
-          <span className="text-[var(--destructive)]">{summary.fraud_rings_detected}</span> fraud rings. 
-          Flagged <span className="text-[#FFB800]">{summary.suspicious_accounts_flagged}</span> suspicious accounts 
-          and identified <span className="text-[var(--primary)]">{safeCount}</span> safe accounts.
+        <p className="text-[9px] font-mono text-[var(--foreground)] leading-relaxed">
+          <span className="text-[var(--primary)]">{summary.total_accounts_analyzed}</span> accounts,{' '}
+          <span className="text-[var(--destructive)]">{summary.fraud_rings_detected}</span> rings,{' '}
+          <span className="text-[#FFB800]">{summary.suspicious_accounts_flagged}</span> flagged,{' '}
+          <span className="text-[var(--primary)]">{safeCount}</span> safe
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="border border-[var(--border)] p-2 text-center">
-          <div className="text-lg font-bold text-[var(--primary)]">{summary.total_accounts_analyzed}</div>
-          <div className="text-[8px] font-mono text-[var(--muted-foreground)]">TOTAL</div>
+      <div className="grid grid-cols-4 gap-1">
+        <div className="border border-[var(--border)] p-1.5 text-center">
+          <div className="text-sm font-bold text-[var(--primary)]">{summary.total_accounts_analyzed}</div>
+          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">TOTAL</div>
         </div>
-        <div className="border border-[var(--border)] p-2 text-center">
-          <div className="text-lg font-bold text-[var(--destructive)]">{summary.fraud_rings_detected}</div>
-          <div className="text-[8px] font-mono text-[var(--muted-foreground)]">RINGS</div>
+        <div className="border border-[var(--border)] p-1.5 text-center">
+          <div className="text-sm font-bold text-[var(--destructive)]">{summary.fraud_rings_detected}</div>
+          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">RINGS</div>
         </div>
-        <div className="border border-[var(--border)] p-2 text-center">
-          <div className="text-lg font-bold text-[#FFB800]">{summary.suspicious_accounts_flagged}</div>
-          <div className="text-[8px] font-mono text-[var(--muted-foreground)]">SUSPICIOUS</div>
+        <div className="border border-[var(--border)] p-1.5 text-center">
+          <div className="text-sm font-bold text-[#FFB800]">{summary.suspicious_accounts_flagged}</div>
+          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">FLAG</div>
         </div>
-        <div className="border border-[var(--border)] p-2 text-center">
-          <div className="text-lg font-bold text-[var(--primary)]">{safeCount}</div>
-          <div className="text-[8px] font-mono text-[var(--muted-foreground)]">SAFE</div>
+        <div className="border border-[var(--border)] p-1.5 text-center">
+          <div className="text-sm font-bold text-[var(--primary)]">{safeCount}</div>
+          <div className="text-[7px] font-mono text-[var(--muted-foreground)]">SAFE</div>
         </div>
       </div>
 
       <div className="text-[8px] font-mono text-[var(--muted-foreground)] text-center">
-        Processed in {summary.processing_time_seconds.toFixed(2)}s
+        {summary.processing_time_seconds.toFixed(2)}s
       </div>
     </div>
   )
