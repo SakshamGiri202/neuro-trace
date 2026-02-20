@@ -1,7 +1,8 @@
-﻿import pandas as pd
+import pandas as pd
 import igraph as ig
 from typing import List, Dict, Any
 from datetime import timedelta
+
 
 def detect_smurfing(g: ig.Graph, df: pd.DataFrame) -> List[Dict[str, Any]]:
     """Detect smurfing patterns in transaction data using iGraph."""
@@ -34,7 +35,7 @@ def detect_smurfing(g: ig.Graph, df: pd.DataFrame) -> List[Dict[str, Any]]:
 
         if out_degree >= 10:
             out_edges = g.incident(i, mode="out")
-            sent_timestamps = g.es[out_edges]["timestamp"]
+            sent_timestamps = pd.to_datetime(g.es[out_edges]["timestamp"])
             if len(sent_timestamps) >= 2:
                 if max(sent_timestamps) - min(sent_timestamps) <= timedelta(hours=72):
                     patterns.append("fan_out_temporal")
@@ -55,7 +56,7 @@ def detect_smurfing(g: ig.Graph, df: pd.DataFrame) -> List[Dict[str, Any]]:
 
         elif in_degree >= 10:
             in_edges = g.incident(i, mode="in")
-            received_timestamps = g.es[in_edges]["timestamp"]
+            received_timestamps = pd.to_datetime(g.es[in_edges]["timestamp"])
             if len(received_timestamps) >= 2:
                 if max(received_timestamps) - min(received_timestamps) <= timedelta(
                     hours=72

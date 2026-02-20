@@ -16,5 +16,18 @@ export async function uploadTransactions(file: File): Promise<any> {
         throw new Error(error.detail || 'Upload failed')
     }
 
-    return response.json()
+    const result = await response.json()
+
+    // Fetch graph data from cytoscape endpoint
+    try {
+        const graphResponse = await fetch(`${API_BASE_URL}/api/graph/cytoscape`)
+        if (graphResponse.ok) {
+            const graphData = await graphResponse.json()
+            result.graphData = graphData
+        }
+    } catch (e) {
+        console.warn('Failed to fetch graph data:', e)
+    }
+
+    return result
 }

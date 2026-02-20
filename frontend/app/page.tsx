@@ -60,34 +60,80 @@ export default function HomePage() {
         const { uploadTransactions } = await import('@/lib/api')
         const backendResult = await uploadTransactions(file)
 
-        // Convert the backend result (plain objects) to the internal AnalysisResult format
-        // which uses Maps and Sets for efficiency and type-safety.
+        // Build all_accounts map from suspicious accounts
         const allAccountsMap = new Map()
-        Object.entries(backendResult.all_accounts).forEach(([id, acc]: [string, any]) => {
-          allAccountsMap.set(id, acc)
-        })
+        if (backendResult.suspicious_accounts) {
+          backendResult.suspicious_accounts.forEach((acc: any) => {
+            allAccountsMap.set(acc.account_id, {
+              ...acc,
+              total_transactions: 0 // Will be computed from edges
+            })
+          })
+        }
 
+        // Build communities map from fraud rings
         const communitiesMap = new Map()
-        Object.entries(backendResult.communities).forEach(([id, comm]: [string, any]) => {
-          communitiesMap.set(id, comm)
-        })
+        if (backendResult.fraud_rings) {
+          backendResult.fraud_rings.forEach((ring: any) => {
+            communitiesMap.set(ring.ring_id, ring)
+          })
+        }
 
-        const edges = backendResult.edges.map((e: any) => ({
-          from: e.from_account,
-          to: e.to_account,
-          amount: e.amount,
-          suspicious: e.suspicious
-        }))
+        // Use graphData from backend if available, otherwise build from suspicious accounts
+        let edges: any[] = []
+        let adj: Record<string, Set<string>> = {}
+        let reverseAdj: Record<string, Set<string>> = {}
+        let nodeDegrees: Record<string, number> = {}
 
-        const adj: Record<string, Set<string>> = {}
-        Object.entries(backendResult.adj).forEach(([id, neighbors]: [string, any]) => {
-          adj[id] = new Set(neighbors)
-        })
+        if (backendResult.graphData) {
+          // Convert cytoscape format to our format
+          const { nodes, edges: graphEdges } = backendResult.graphData
+          
+          // Build adjacency lists
+          adj = {}
+          reverseAdj = {}
+          nodeDegrees = {}
+          
+          nodes.forEach((node: any) => {
+            const id = node.data.id
+            adj[id] = new Set()
+            reverseAdj[id] = new Set()
+            nodeDegrees[id] = (node.data.in_degree || 0) + (node.data.out_degree || 0)
+          })
 
-        const reverseAdj: Record<string, Set<string>> = {}
-        Object.entries(backendResult.reverse_adj).forEach(([id, neighbors]: [string, any]) => {
-          reverseAdj[id] = new Set(neighbors)
-        })
+          edges = graphEdges.map((e: any) => ({
+            from: e.data.source,
+            to: e.data.target,
+            amount: e.data.amount || 0,
+            suspicious: false
+          }))
+
+          // Populate adjacency
+          graphEdges.forEach((e: any) => {
+            const from = e.data.source
+            const to = e.data.target
+            if (adj[from]) adj[from].add(to)
+            if (reverseAdj[to]) reverseAdj[to].add(from)
+          })
+
+          // Update allAccountsMap with degree info
+          nodes.forEach((node: any) => {
+            const id = node.data.id
+            if (allAccountsMap.has(id)) {
+              const acc = allAccountsMap.get(id)
+              acc.total_transactions = nodeDegrees[id]
+              allAccountsMap.set(id, acc)
+            } else {
+              allAccountsMap.set(id, {
+                account_id: id,
+                suspicion_score: 0,
+                detected_patterns: [],
+                ring_id: null,
+                total_transactions: nodeDegrees[id]
+              })
+            }
+          })
+        }
 
         const result = {
           ...backendResult,
@@ -96,7 +142,7 @@ export default function HomePage() {
           edges: edges,
           adj: adj,
           reverseAdj: reverseAdj,
-          nodeDegrees: backendResult.node_degrees
+          nodeDegrees: nodeDegrees
         }
 
         const { saveAnalysis } = await import('@/lib/db')
