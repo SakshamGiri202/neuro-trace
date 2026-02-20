@@ -1,7 +1,4 @@
-"""
-Main FastAPI application entrypoint for NeuroTrace backend.
-"""
-
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,9 +10,12 @@ app = FastAPI(
     version="2.1.0",
 )
 
+raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+origins = ["*"] if raw_origins == "*" else [o.strip() for o in raw_origins.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
