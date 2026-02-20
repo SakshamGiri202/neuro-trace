@@ -94,14 +94,14 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
 
   if (isAnalyzing) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative w-16 h-16">
+      <div className="h-full flex items-center justify-center bg-[var(--card)] border border-[var(--border)] rounded-sm p-4">
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative w-12 h-12">
             <div className="absolute inset-0 border-2 border-[var(--border)]" />
             <div className="absolute inset-0 border-t-2 border-[var(--primary)] animate-spin" />
           </div>
           <p className="text-xs font-mono text-[var(--muted-foreground)] tracking-widest uppercase">
-            Analyzing transaction graph...
+            Analyzing...
           </p>
         </div>
       </div>
@@ -109,8 +109,8 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center p-8">
-      <div className="w-full max-w-lg bg-[var(--card)] border border-[var(--border)] p-8 mt-[-10vh] shadow-lg">
+    <div className="h-full flex items-center justify-center bg-[var(--card)] border border-[var(--border)] rounded-sm p-3 md:p-4">
+      <div className="w-full">
         <div
           onDragOver={(e) => {
             e.preventDefault()
@@ -120,7 +120,7 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className={`
-            relative cursor-pointer p-10 text-center border-2 border-dashed transition-all
+            relative cursor-pointer p-6 md:p-8 text-center border-2 border-dashed transition-all
             ${isDragging
               ? 'border-[var(--primary)] bg-[var(--primary)]/10 glow-cyan'
               : 'border-[var(--border)] hover:border-[var(--primary)]/50 bg-[var(--background)]'
@@ -135,10 +135,10 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
             onChange={handleFileInput}
             className="hidden"
           />
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2 md:gap-3">
             <svg
-              width="40"
-              height="40"
+              width="32"
+              height="32"
               viewBox="0 0 24 24"
               fill="none"
               stroke={isDragging ? '#00F5FF' : '#6B6B80'}
@@ -150,12 +150,11 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
               <polyline points="9 15 12 12 15 15" />
             </svg>
             <div>
-              <p className="text-sm font-mono text-[var(--foreground)]">
-                DROP TRANSACTION CSV
+              <p className="text-xs md:text-sm font-mono text-[var(--foreground)]">
+                DROP CSV
               </p>
-              <p className="text-xs font-mono text-[var(--muted-foreground)] mt-1">
-                Required: transaction_id, sender_id, receiver_id, amount,
-                timestamp
+              <p className="text-[10px] md:text-xs font-mono text-[var(--muted-foreground)] mt-1 hidden md:block">
+                transaction_id, sender_id, receiver_id, amount, timestamp
               </p>
             </div>
           </div>
@@ -165,16 +164,16 @@ export default function UploadZone({ onDataLoaded, onFileLoaded, isAnalyzing }: 
         </div>
 
         {error && (
-          <div className="mt-3 p-3 border border-[#FF2D55] bg-[var(--destructive)]/10 animate-fade-in-up">
-            <p className="text-xs font-mono text-[var(--destructive)]">{error}</p>
+          <div className="mt-2 p-2 border border-[#FF2D55] bg-[var(--destructive)]/10 animate-fade-in-up">
+            <p className="text-[10px] font-mono text-[var(--destructive)]">{error}</p>
           </div>
         )}
 
         <button
           onClick={loadSample}
-          className="mt-4 w-full py-2.5 border border-[var(--border)] bg-[var(--card)] text-xs font-mono text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:border-[var(--primary)]/50 transition-all"
+          className="mt-3 w-full py-2 border border-[var(--border)] bg-[var(--card)] text-[10px] md:text-xs font-mono text-[var(--muted-foreground)] hover:text-[var(--primary)] hover:border-[var(--primary)]/50 transition-all"
         >
-          {'>> LOAD SAMPLE DATASET (260+ transactions) <<'}
+          {'>> LOAD SAMPLE (260+ txns) <<'}
         </button>
       </div>
     </div>

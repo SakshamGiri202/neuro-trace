@@ -68,6 +68,7 @@ export interface NavBarProps {
   isDark: boolean
   onToggleTheme: () => void
   showLegend?: boolean
+  showPerformance?: boolean
 }
 
 export interface UploadZoneProps {
